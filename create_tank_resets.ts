@@ -2,10 +2,14 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://cbpdteymzglrwfgeepys.supabase.co';
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const supabase = createClient(
-  process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_KEY || ''
-);
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error("Supabase environment variables are missing");
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function createTable() {
   console.log('Attempting to check tank_resets table via direct insert attempt. If it fails due to missing table, we must manually create it via dashboard.');
