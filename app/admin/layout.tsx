@@ -23,7 +23,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'transparent' }}>
-      <AdminSidebar adminName={profile?.name || 'Admin'} />
+      <AdminSidebar adminName={(profile as any)?.name || 'Admin'} />
       <main style={{ marginLeft: '240px', flex: 1, padding: '28px', minWidth: 0 }}>
         {children}
       </main>
