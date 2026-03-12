@@ -1,8 +1,13 @@
 const { createClient } = require('@supabase/supabase-js');
-const supabase = createClient('https://cbpdteymzglrwfgeepys.supabase.co', 'sb_secret_AskwdSR-o0RXll8hhEIVGQ_Xl3S5iuo');
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 
 async function test() {
   const { data, error } = await supabase.from('profiles').select('*');
   console.log(data, error);
 }
+
 test();
