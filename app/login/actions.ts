@@ -6,17 +6,26 @@ import { redirect } from 'next/navigation'
 export async function login(formData: FormData) {
   const supabase = await createClient()
 
+  const email = formData.get('email') as string
+  const password = formData.get('password') as string
+
+  if (!email || !password) {
+    redirect('/login?error=Email and password are required')
+  }
+
   const { error } = await supabase.auth.signInWithPassword({
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
+    email,
+    password,
   })
 
   if (error) {
-    return { error: error.message }
+    redirect(`/login?error=${encodeURIComponent(error.message)}`)
   }
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Login failed' }
+  if (!user) {
+    redirect('/login?error=Login failed')
+  }
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -24,10 +33,14 @@ export async function login(formData: FormData) {
     .eq('id', user.id)
     .single()
 
-  if (profile?.role?.trim().toLowerCase() === 'admin') {
+  const role = profile?.role?.trim().toLowerCase()
+
+  if (role === 'admin') {
     redirect('/admin/dashboard')
-  } else {
+  } else if (role === 'staff') {
     redirect('/staff')
+  } else {
+    redirect('/login?error=Invalid role assignment')
   }
 }
 
