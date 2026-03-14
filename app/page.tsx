@@ -4,21 +4,35 @@ import { redirect } from 'next/navigation'
 export default async function Home() {
   const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  // get logged in user
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
 
-  if (!user) {
+  if (userError || !user) {
     redirect('/login')
   }
 
-  const { data: profile } = await supabase
+  // get profile
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('role')
     .eq('id', user.id)
     .single()
 
-  if (profile?.role?.trim().toLowerCase() === 'admin') {
+  if (profileError) {
+    console.error('Profile fetch error:', profileError)
+    redirect('/login')
+  }
+
+  const role = profile?.role?.trim().toLowerCase()
+
+  if (role === 'admin') {
     redirect('/admin/dashboard')
   }
 
-  redirect('/staff')
+  if (role === 'staff') {
+    redirect('/staff')
+  }
+
+  // fallback
+  redirect('/login')
 }
