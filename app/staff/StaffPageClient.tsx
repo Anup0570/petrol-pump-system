@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/client'
 import { logout } from '@/app/login/actions'
 import type { NozzleReading, CreditItem, Denomination } from '@/lib/types'
 
@@ -99,7 +99,7 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
     const finalDateObj = new Date(finalDateStr)
     const shiftDateOnly = finalDateObj.getFullYear() + '-' + String(finalDateObj.getMonth() + 1).padStart(2, '0') + '-' + String(finalDateObj.getDate()).padStart(2, '0')
 
-    const supabase = await createClient()
+    const supabase = createClient()
     const { error } = await supabase.from('fuel_entries').insert({
       created_at: finalDateObj.toISOString(),
       shift_date: shiftDateOnly,

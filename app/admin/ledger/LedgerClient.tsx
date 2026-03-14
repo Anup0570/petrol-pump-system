@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/client'
 import { format } from 'date-fns'
 import type { CreditLedgerEntry } from '@/lib/types'
 
@@ -28,7 +28,7 @@ export default function LedgerClient({ initialEntries }: { initialEntries: Credi
     const amt = parseFloat(form.amount)
     if (!form.customer_name.trim() || isNaN(amt) || amt <= 0) { alert('Enter customer name and valid amount'); return }
     setSaving(true)
-    const supabase = await createClient()
+    const supabase = createClient()
     const { data, error } = await supabase.from('credit_ledger').insert({
       customer_name: form.customer_name.trim(),
       vehicle_number: form.vehicle_number.trim(),
@@ -47,7 +47,7 @@ export default function LedgerClient({ initialEntries }: { initialEntries: Credi
   }
 
   async function markPaid(id: string) {
-    const supabase = await createClient()
+    const supabase = createClient()
     const { error } = await supabase.from('credit_ledger')
       .update({ status: 'Paid', paid_at: new Date().toISOString() }).eq('id', id)
     if (!error) setEntries(prev => prev.map(e => e.id === id ? { ...e, status: 'Paid', paid_at: new Date().toISOString() } : e))
@@ -55,7 +55,7 @@ export default function LedgerClient({ initialEntries }: { initialEntries: Credi
 
   async function deleteEntry(id: string) {
     if (!confirm('Delete this credit entry?')) return
-    const supabase = await createClient()
+    const supabase = createClient()
     await supabase.from('credit_ledger').delete().eq('id', id)
     setEntries(prev => prev.filter(e => e.id !== id))
   }
