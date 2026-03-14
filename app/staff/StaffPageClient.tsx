@@ -27,7 +27,7 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
   const [shiftType, setShiftType] = useState('Morning Shift')
   const [ratePetrol, setRatePetrol] = useState(101.53)
   const [rateDiesel, setRateDiesel] = useState(93.16)
-  const [rateOil, setRateOil] = useState(350.00)
+  const [rateOil, setRateOil] = useState(400.00)
   const [closings, setClosings] = useState<Record<string, string>>({})
   const [testPerformed, setTestPerformed] = useState(true)
   const [gpay, setGpay] = useState(0)
@@ -221,15 +221,15 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
             <div className="grid grid-cols-3 gap-3">
               <div>
                 <label className="block text-xs mb-1.5" style={{ color: '#fbbf24' }}>Petrol Rate</label>
-                <input type="number" step="0.01" value={ratePetrol} onChange={e => setRatePetrol(parseFloat(e.target.value) || 0)} style={{ borderColor: '#d97706' }} />
+                <PaymentInput step="0.01" value={ratePetrol} onChange={setRatePetrol} style={{ borderColor: '#d97706' }} />
               </div>
               <div>
                 <label className="block text-xs mb-1.5" style={{ color: '#60a5fa' }}>Diesel Rate</label>
-                <input type="number" step="0.01" value={rateDiesel} onChange={e => setRateDiesel(parseFloat(e.target.value) || 0)} style={{ borderColor: '#2563eb' }} />
+                <PaymentInput step="0.01" value={rateDiesel} onChange={setRateDiesel} style={{ borderColor: '#2563eb' }} />
               </div>
               <div>
                 <label className="block text-xs mb-1.5" style={{ color: '#a78bfa' }}>2T Oil Rate</label>
-                <input type="number" step="0.01" value={rateOil} onChange={e => setRateOil(parseFloat(e.target.value) || 0)} style={{ borderColor: '#7c3aed' }} />
+                <PaymentInput step="0.01" value={rateOil} onChange={setRateOil} style={{ borderColor: '#7c3aed' }} />
               </div>
             </div>
           </div>
@@ -521,13 +521,15 @@ function PaymentInput({
   onChange,
   className,
   style,
-  inputMode
+  inputMode,
+  step
 }: {
   value: number;
   onChange: (val: number) => void;
   className?: string;
   style?: React.CSSProperties;
   inputMode?: "numeric" | "text" | "decimal" | "none" | "tel" | "search" | "email" | "url";
+  step?: string | number;
 }) {
   const [localValue, setLocalValue] = useState<string>(value.toString());
 
@@ -546,6 +548,7 @@ function PaymentInput({
     <input
       type="number"
       min="0"
+      step={step}
       inputMode={inputMode}
       className={className}
       style={style}
