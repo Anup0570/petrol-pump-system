@@ -1,13 +1,12 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/server'
 import { format } from 'date-fns'
 import type { FuelEntry } from '@/lib/types'
 import DeleteShiftButton from '../dashboard/DeleteShiftButton'
 
 export default function EntriesClient({ initialEntries, isAdmin = false }: { initialEntries: FuelEntry[], isAdmin?: boolean }) {
-  const supabase = createClient()
   const [entries, setEntries] = useState<FuelEntry[]>(initialEntries)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -23,6 +22,7 @@ export default function EntriesClient({ initialEntries, isAdmin = false }: { ini
   })
 
   async function verifyEntry(id: string) {
+    const supabase = await createClient()
     const { error } = await supabase.from('fuel_entries').update({ status: 'Verified' }).eq('id', id)
     if (!error) setEntries(prev => prev.map(e => e.id === id ? { ...e, status: 'Verified' } : e))
   }
@@ -30,6 +30,7 @@ export default function EntriesClient({ initialEntries, isAdmin = false }: { ini
   async function deleteEntry(id: string) {
     if (!confirm('Delete this shift entry permanently?')) return
     setDeleting(id)
+    const supabase = await createClient()
     await supabase.from('fuel_entries').delete().eq('id', id)
     setEntries(prev => prev.filter(e => e.id !== id))
     setDeleting(null)

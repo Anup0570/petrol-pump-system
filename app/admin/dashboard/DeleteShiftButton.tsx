@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/server'
 
 interface DeleteShiftButtonProps {
   shiftId: string
@@ -10,7 +10,6 @@ interface DeleteShiftButtonProps {
 }
 
 export default function DeleteShiftButton({ shiftId, petrolLitres, dieselLitres }: DeleteShiftButtonProps) {
-  const supabase = createClient()
   const [deleting, setDeleting] = useState(false)
 
   async function handleDelete() {
@@ -21,6 +20,7 @@ export default function DeleteShiftButton({ shiftId, petrolLitres, dieselLitres 
     setDeleting(true)
 
     try {
+      const supabase = await createClient()
       // 1. Delete the shift entry
       const { error: deleteError } = await supabase
         .from('fuel_entries')

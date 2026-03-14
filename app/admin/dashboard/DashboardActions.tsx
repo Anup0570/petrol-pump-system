@@ -1,10 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/server'
 
 export default function DashboardActions() {
-  const supabase = createClient()
   const [showDelivery, setShowDelivery] = useState(false)
   const [fuelType, setFuelType] = useState('petrol')
   const [litres, setLitres] = useState('')
@@ -15,6 +14,7 @@ export default function DashboardActions() {
     if (!l || l <= 0) { alert('Enter valid litres'); return }
     setSaving(true)
 
+    const supabase = await createClient()
     // Log delivery
     await supabase.from('fuel_deliveries').insert({ fuel_type: fuelType, litres: l, logged_by: 'Admin' })
 
