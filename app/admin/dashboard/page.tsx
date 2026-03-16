@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { format } from 'date-fns'
 import DashboardActions from './DashboardActions'
 import DeleteShiftButton from './DeleteShiftButton'
+import MobileCollapsible from './MobileCollapsible'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -62,86 +63,145 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* KPI Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {kpis.map(kpi => (
-          <div key={kpi.label} style={{ background: '#ffffff', borderRadius: '16px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-            <div>
-              <div style={{ fontSize: '13px', color: '#64748b', fontWeight: 600, marginBottom: '8px' }}>{kpi.label}</div>
-              <div className="text-2xl font-bold text-slate-800">{kpi.value}</div>
-            </div>
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: kpi.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <i className={`fa-solid ${kpi.icon}`} style={{ color: kpi.color, fontSize: '20px' }}></i>
-            </div>
+      {/* --- DESKTOP LAYOUT --- */}
+      <div className="hidden md:block">
+        {/* KPI Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {kpis.map(kpi => <KpiCard key={kpi.label} kpi={kpi} />)}
+        </div>
+
+        {/* Tank Inventory */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <TankCard label="Petrol Tank" fuelType="petrol" current={petrolTank.current_stock} capacity={petrolTank.capacity} />
+          <TankCard label="Diesel Tank" fuelType="diesel" current={dieselTank.current_stock} capacity={dieselTank.capacity} />
+        </div>
+      </div>
+
+      {/* --- MOBILE LAYOUT --- */}
+      <div className="md:hidden mb-6">
+        {/* Top 2 Cards: Gross Sales & Cash Collected */}
+        <div className="grid grid-cols-1 gap-4 mb-4">
+          <KpiCard kpi={kpis[0]} />
+          <KpiCard kpi={kpis[1]} />
+        </div>
+
+        <MobileCollapsible title="Payment Summary" icon="fa-money-bill-transfer">
+          <div className="grid grid-cols-1 gap-3">
+            <KpiCard kpi={kpis[2]} />
+            <KpiCard kpi={kpis[3]} />
+            <KpiCard kpi={kpis[6]} />
+            <KpiCard kpi={kpis[7]} />
           </div>
-        ))}
+        </MobileCollapsible>
+
+        <MobileCollapsible title="Fuel Sales" icon="fa-gas-pump">
+          <div className="grid grid-cols-1 gap-3">
+            <KpiCard kpi={kpis[4]} />
+            <KpiCard kpi={kpis[5]} />
+          </div>
+        </MobileCollapsible>
       </div>
 
-      {/* Tank Inventory */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <TankCard label="Petrol Tank" fuelType="petrol" current={petrolTank.current_stock} capacity={petrolTank.capacity} />
-        <TankCard label="Diesel Tank" fuelType="diesel" current={dieselTank.current_stock} capacity={dieselTank.capacity} />
+      {/* --- ACTIONS ROW (Visible on both) --- */}
+      <div className="mb-6 md:mb-8">
+        <DashboardActions />
       </div>
 
-      {/* Actions Row */}
-      <DashboardActions />
+      {/* --- MOBILE TANKS & SHIFTS --- */}
+      <div className="md:hidden">
+        <MobileCollapsible title="Tank Status" icon="fa-database">
+          <div className="grid grid-cols-1 gap-4">
+            <TankCard label="Petrol Tank" fuelType="petrol" current={petrolTank.current_stock} capacity={petrolTank.capacity} />
+            <TankCard label="Diesel Tank" fuelType="diesel" current={dieselTank.current_stock} capacity={dieselTank.capacity} />
+          </div>
+        </MobileCollapsible>
 
-      {/* Recent Shifts Table */}
-      <div style={{ background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', padding: '24px', marginTop: '24px' }}>
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="font-bold text-slate-800 flex items-center gap-2 text-lg">
-            <i className="fa-solid fa-table-list" style={{ color: '#3b82f6' }}></i>
-            Recent Shifts
-          </h3>
-          <a href="/admin/entries" style={{ fontSize: '14px', color: '#2563eb', fontWeight: 600, textDecoration: 'none' }}>
-            View all <i className="fa-solid fa-arrow-right ml-1"></i>
-          </a>
+        <MobileCollapsible title="Recent Shifts" icon="fa-table-list">
+          <RecentShiftsTable recentEntries={recentEntries || []} />
+          <div className="mt-4 text-center pb-2">
+            <a href="/admin/entries" className="text-sm font-semibold text-blue-600">View all shifts →</a>
+          </div>
+        </MobileCollapsible>
+      </div>
+
+      {/* --- DESKTOP RECENT SHIFTS --- */}
+      <div className="hidden md:block">
+        <div style={{ background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', padding: '24px' }}>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="font-bold text-slate-800 flex items-center gap-2 text-lg">
+              <i className="fa-solid fa-table-list" style={{ color: '#3b82f6' }}></i>
+              Recent Shifts
+            </h3>
+            <a href="/admin/entries" style={{ fontSize: '14px', color: '#2563eb', fontWeight: 600, textDecoration: 'none' }}>
+              View all <i className="fa-solid fa-arrow-right ml-1"></i>
+            </a>
+          </div>
+          <RecentShiftsTable recentEntries={recentEntries || []} />
         </div>
-        <div className="overflow-x-auto">
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
-            <thead>
-              <tr style={{ borderBottom: '2px solid #e2e8f0', background: '#ffffff' }}>
-                {['Date', 'Staff', 'Shift', 'Gross (₹)', 'Exp. Cash (₹)', 'Petrol (L)', 'Diesel (L)', 'Difference', 'Status', 'Action'].map((h, index) => (
-                  <th key={index} style={{ padding: '14px 16px', textAlign: 'left', color: '#475569', fontWeight: 600, whiteSpace: 'nowrap' }}>{h}</th>
-                ))}
+      </div>
+    </div>
+  )
+}
+
+function KpiCard({ kpi }: { kpi: any }) {
+  return (
+    <div style={{ background: '#ffffff', borderRadius: '16px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+      <div>
+        <div style={{ fontSize: '13px', color: '#64748b', fontWeight: 600, marginBottom: '8px' }}>{kpi.label}</div>
+        <div className="text-2xl font-bold text-slate-800">{kpi.value}</div>
+      </div>
+      <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: kpi.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <i className={`fa-solid ${kpi.icon}`} style={{ color: kpi.color, fontSize: '20px' }}></i>
+      </div>
+    </div>
+  )
+}
+
+function RecentShiftsTable({ recentEntries }: { recentEntries: any[] }) {
+  return (
+    <div className="overflow-x-auto">
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+        <thead>
+          <tr style={{ borderBottom: '2px solid #e2e8f0', background: '#ffffff' }}>
+            {['Date', 'Staff', 'Shift', 'Gross (₹)', 'Exp. Cash (₹)', 'Petrol (L)', 'Diesel (L)', 'Difference', 'Status', 'Action'].map((h, index) => (
+              <th key={index} style={{ padding: '14px 16px', textAlign: 'left', color: '#475569', fontWeight: 600, whiteSpace: 'nowrap' }}>{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {(recentEntries || []).length === 0 ? (
+            <tr><td colSpan={10} style={{ padding: '32px', textAlign: 'center', color: '#64748b' }}>No shift entries yet.</td></tr>
+          ) : (recentEntries || []).map((entry: any) => {
+            const diff = entry.difference || 0
+            return (
+              <tr key={entry.id} className="hover:bg-slate-50 transition-colors" style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <td style={{ padding: '14px 16px', color: '#0f172a', fontWeight: 500 }}>{format(new Date(entry.created_at), 'dd MMM, hh:mm a')}</td>
+                <td style={{ padding: '14px 16px', color: '#334155' }}>{entry.staff_name}</td>
+                <td style={{ padding: '14px 16px', color: '#64748b' }}>{entry.shift_type}</td>
+                <td style={{ padding: '14px 16px', color: '#0f172a', fontWeight: 600 }}>₹{(entry.gross_sales || 0).toLocaleString()}</td>
+                <td style={{ padding: '14px 16px', color: '#0f172a', fontWeight: 600 }}>₹{(entry.expected_cash || 0).toLocaleString()}</td>
+                <td style={{ padding: '14px 16px', color: '#d97706', fontWeight: 500 }}>{(entry.petrol_litres || 0).toFixed(1)}</td>
+                <td style={{ padding: '14px 16px', color: '#2563eb', fontWeight: 500 }}>{(entry.diesel_litres || 0).toFixed(1)}</td>
+                <td style={{ padding: '14px 16px', fontWeight: 700, color: diff > 0 ? '#2563eb' : diff < 0 ? '#ef4444' : '#10b981' }}>
+                  {diff >= 0 ? '+' : ''}₹{diff.toLocaleString()}
+                </td>
+                <td style={{ padding: '14px 16px' }}>
+                  <span className={`badge ${entry.status === 'Verified' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-100 text-amber-700 border border-amber-200'}`} style={{ padding: '4px 10px', borderRadius: '99px', fontSize: '12px', fontWeight: 600 }}>
+                    {entry.status}
+                  </span>
+                </td>
+                <td style={{ padding: '14px 16px', textAlign: 'right' }}>
+                  <DeleteShiftButton
+                    shiftId={entry.id}
+                    petrolLitres={entry.petrol_litres || 0}
+                    dieselLitres={entry.diesel_litres || 0}
+                  />
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {(recentEntries || []).length === 0 ? (
-                <tr><td colSpan={10} style={{ padding: '32px', textAlign: 'center', color: '#64748b' }}>No shift entries yet.</td></tr>
-              ) : (recentEntries || []).map((entry: any) => {
-                const diff = entry.difference || 0
-                return (
-                  <tr key={entry.id} className="hover:bg-slate-50 transition-colors" style={{ borderBottom: '1px solid #e2e8f0' }}>
-                    <td style={{ padding: '14px 16px', color: '#0f172a', fontWeight: 500 }}>{format(new Date(entry.created_at), 'dd MMM, hh:mm a')}</td>
-                    <td style={{ padding: '14px 16px', color: '#334155' }}>{entry.staff_name}</td>
-                    <td style={{ padding: '14px 16px', color: '#64748b' }}>{entry.shift_type}</td>
-                    <td style={{ padding: '14px 16px', color: '#0f172a', fontWeight: 600 }}>₹{(entry.gross_sales || 0).toLocaleString()}</td>
-                    <td style={{ padding: '14px 16px', color: '#0f172a', fontWeight: 600 }}>₹{(entry.expected_cash || 0).toLocaleString()}</td>
-                    <td style={{ padding: '14px 16px', color: '#d97706', fontWeight: 500 }}>{(entry.petrol_litres || 0).toFixed(1)}</td>
-                    <td style={{ padding: '14px 16px', color: '#2563eb', fontWeight: 500 }}>{(entry.diesel_litres || 0).toFixed(1)}</td>
-                    <td style={{ padding: '14px 16px', fontWeight: 700, color: diff > 0 ? '#2563eb' : diff < 0 ? '#ef4444' : '#10b981' }}>
-                      {diff >= 0 ? '+' : ''}₹{diff.toLocaleString()}
-                    </td>
-                    <td style={{ padding: '14px 16px' }}>
-                      <span className={`badge ${entry.status === 'Verified' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-100 text-amber-700 border border-amber-200'}`} style={{ padding: '4px 10px', borderRadius: '99px', fontSize: '12px', fontWeight: 600 }}>
-                        {entry.status}
-                      </span>
-                    </td>
-                    <td style={{ padding: '14px 16px', textAlign: 'right' }}>
-                      <DeleteShiftButton
-                        shiftId={entry.id}
-                        petrolLitres={entry.petrol_litres || 0}
-                        dieselLitres={entry.diesel_litres || 0}
-                      />
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            )
+          })}
+        </tbody>
+      </table>
     </div>
   )
 }
