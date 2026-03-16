@@ -237,3 +237,45 @@ input::placeholder, textarea::placeholder { color: #64748b; font-weight: 400; }
   background: linear-gradient(to right, rgba(239,68,68,0.15), rgba(239,68,68,0.05)); 
   border-left: 4px solid #ef4444; 
 }
+
+/* Mobile Enhanced Responsiveness */
+@media (max-width: 767px) {
+  /* Prevent horizontal overflow on mobile body */
+  body {
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  /* Ensure inputs are 100% width and easier to tap */
+  input, select, textarea {
+    min-height: 48px;
+    font-size: 16px !important; /* Prevents iOS auto-zoom */
+    padding: 14px 16px;
+  }
+
+  /* Increase button tap targets */
+  button {
+    min-height: 48px;
+  }
+  
+  /* Tables overflow container */
+  .overflow-x-auto {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1rem;
+    scrollbar-width: thin;
+  }
+  
+  /* Reduce panel padding slightly on very small screens to save space */
+  .glass-panel {
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+
+  .pump-header-gradient {
+    margin-left: -8px;
+    margin-right: -8px;
+    padding: 8px 8px;
+  }
+}

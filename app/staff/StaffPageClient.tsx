@@ -218,7 +218,7 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
               <i className="fa-solid fa-tag" style={{ color: '#fbbf24' }}></i>
               Today's Fuel Rates (₹/L)
             </h3>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-xs mb-1.5" style={{ color: '#fbbf24' }}>Petrol Rate</label>
                 <PaymentInput step="0.01" value={ratePetrol} onChange={setRatePetrol} style={{ borderColor: '#d97706' }} />
@@ -248,7 +248,7 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
                 <thead>
                   <tr style={{ borderBottom: '1px solid #334155' }}>
                     {['Nozzle', 'Fuel', 'Opening', 'Closing', 'Volume'].map(h => (
-                      <th key={h} style={{ padding: '8px 12px', textAlign: 'left', color: '#64748b', fontWeight: 500 }}>{h}</th>
+                      <th key={h} style={{ padding: '8px 12px', textAlign: 'left', color: '#64748b', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -283,21 +283,21 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
             <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
               <i className="fa-solid fa-money-bill-transfer" style={{ color: '#60a5fa' }}></i>Digital Payments & Expenses
             </h3>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <label className="text-sm w-36 shrink-0" style={{ color: '#94a3b8' }}>
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                <label className="text-sm sm:w-36 shrink-0" style={{ color: '#94a3b8' }}>
                   <i className="fa-brands fa-google-pay mr-1"></i>GPay / UPI (₹)
                 </label>
                 <PaymentInput value={gpay} onChange={setGpay} />
               </div>
-              <div className="flex items-center gap-3">
-                <label className="text-sm w-36 shrink-0" style={{ color: '#94a3b8' }}>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                <label className="text-sm sm:w-36 shrink-0" style={{ color: '#94a3b8' }}>
                   <i className="fa-regular fa-credit-card mr-1"></i>Card Swipes (₹)
                 </label>
                 <PaymentInput value={card} onChange={setCard} />
               </div>
-              <div className="flex items-center gap-3">
-                <label className="text-sm w-36 shrink-0" style={{ color: '#94a3b8' }}>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                <label className="text-sm sm:w-36 shrink-0" style={{ color: '#94a3b8' }}>
                   <i className="fa-solid fa-receipt mr-1"></i>Other Expenses
                 </label>
                 <PaymentInput value={expenseAmt} onChange={setExpenseAmt} />
@@ -416,7 +416,7 @@ function PumpTable({ pump, nozzles, closings, setClosings }: {
           <thead>
             <tr style={{ borderBottom: '1px solid rgba(51, 65, 85, 0.5)' }}>
               {['Nozzle', 'Fuel', 'Opening', 'Closing', 'Volume Sold'].map(h => (
-                <th key={h} style={{ padding: '8px 12px', textAlign: 'left', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', fontSize: '11px', letterSpacing: '0.05em' }}>{h}</th>
+                <th key={h} style={{ padding: '8px 12px', textAlign: 'left', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', fontSize: '11px', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>{h}</th>
               ))}
             </tr>
           </thead>
@@ -473,13 +473,13 @@ function CreditSection({ type, label, items, setItems, nameVal, setName, amtVal,
     <div className={cardClass}>
       <h4 className="text-sm font-bold mb-1" style={{ color }}>{label}</h4>
       <p className="text-xs mb-4" style={{ color: '#94a3b8' }}>{type === 'given' ? '(Fuel given, cash NOT received. Deducts from expected cash.)' : '(Cash collected for past dues. Adds to expected cash.)'}</p>
-      <div className="flex gap-2 mb-4">
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <input type="text" placeholder="Name/Vehicle" value={nameVal} onChange={e => setName(e.target.value)}
-          style={{ flex: 2 }} onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), add())} />
+          className="w-full" onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), add())} />
         <input type="number" placeholder="₹ Amt" value={amtVal} onChange={e => setAmt(e.target.value)}
-          style={{ flex: 1, width: '80px' }} onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), add())} />
-        <button type="button" onClick={add} className="btn-primary"
-          style={{ padding: '0 16px', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 700, fontSize: '18px', flexShrink: 0 }}>+</button>
+          className="w-full sm:w-32" onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), add())} />
+        <button type="button" onClick={add} className="btn-primary w-full sm:w-auto"
+          style={{ padding: '12px 24px', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 700, fontSize: '18px', flexShrink: 0 }}>+</button>
       </div>
       <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
         {items.map((item, i) => (
