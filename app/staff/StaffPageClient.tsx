@@ -184,27 +184,26 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
     <form onSubmit={handleSubmit}>
       {/* Config Panel */}
       <div className="glass-panel mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#64748b' }}>Shift Type</label>
-            <select value={shiftType} onChange={e => setShiftType(e.target.value)}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+          <div className="w-full">
+            <label className="block text-xs font-semibold mb-2" style={{ color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Shift Type</label>
+            <select value={shiftType} onChange={e => setShiftType(e.target.value)} className="w-full">
               <option>Morning Shift</option>
-              <option>Evening Shift</option>
               <option>Night Shift</option>
             </select>
           </div>
-          <div>
-            <label className="block text-xs font-semibold mb-2" style={{ color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Staff Name</label>
-            <select required value={staffName} onChange={e => setStaffName(e.target.value)}>
+          <div className="w-full">
+            <label className="block text-xs font-semibold mb-2" style={{ color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Staff Name</label>
+            <select required value={staffName} onChange={e => setStaffName(e.target.value)} className="w-full">
               <option value="" disabled>Select Staff Name...</option>
               {staffNames.map(name => (
                 <option key={name} value={name}>{name}</option>
               ))}
             </select>
           </div>
-          <div>
+          <div className="w-full">
             <label className="block text-xs font-semibold mb-2" style={{ color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Date & Time</label>
-            <input type="datetime-local" value={shiftDate} onChange={e => setShiftDate(e.target.value)} required style={{ borderColor: '#e2e8f0', color: '#0f172a' }} />
+            <input type="datetime-local" value={shiftDate} onChange={e => setShiftDate(e.target.value)} required className="w-full" style={{ borderColor: '#cbd5e1', color: '#0f172a' }} />
           </div>
         </div>
       </div>

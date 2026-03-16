@@ -42,29 +42,33 @@ export default function EntriesClient({ initialEntries, isAdmin = false }: { ini
   return (
     <div>
       {/* Filters */}
-      <div className="glass-panel mb-6" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-        <div style={{ flex: '1 1 200px' }}>
-          <label className="block text-xs mb-1.5" style={{ color: '#94a3b8' }}>Search Staff</label>
-          <input placeholder="Search by name..." value={search} onChange={e => setSearch(e.target.value)} />
+      <div className="glass-panel mb-8" style={{ padding: '24px' }}>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+          <div>
+            <label className="block text-xs font-semibold mb-2" style={{ color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Search Staff</label>
+            <input placeholder="Search by name..." value={search} onChange={e => setSearch(e.target.value)} className="w-full" style={{ borderColor: '#cbd5e1' }} />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold mb-2" style={{ color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Date</label>
+            <input type="date" value={dateFilter} onChange={e => setDateFilter(e.target.value)} className="w-full" style={{ borderColor: '#cbd5e1' }} />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold mb-2" style={{ color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</label>
+            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="w-full" style={{ borderColor: '#cbd5e1' }}>
+              <option value="">All Statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="Verified">Verified</option>
+            </select>
+          </div>
+          {(search || dateFilter || statusFilter) && (
+            <div>
+              <button onClick={() => { setSearch(''); setDateFilter(''); setStatusFilter('') }}
+                style={{ width: '100%', background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', padding: '12px 16px', borderRadius: '12px', cursor: 'pointer', fontWeight: 600, fontSize: '14px', transition: 'all 0.2s', height: '48px' }}>
+                Clear Filters
+              </button>
+            </div>
+          )}
         </div>
-        <div style={{ flex: '1 1 150px' }}>
-          <label className="block text-xs mb-1.5" style={{ color: '#94a3b8' }}>Date</label>
-          <input type="date" value={dateFilter} onChange={e => setDateFilter(e.target.value)} />
-        </div>
-        <div style={{ flex: '1 1 150px' }}>
-          <label className="block text-xs mb-1.5" style={{ color: '#94a3b8' }}>Status</label>
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
-            <option value="">All Statuses</option>
-            <option value="Pending">Pending</option>
-            <option value="Verified">Verified</option>
-          </select>
-        </div>
-        {(search || dateFilter || statusFilter) && (
-          <button onClick={() => { setSearch(''); setDateFilter(''); setStatusFilter('') }}
-            style={{ background: '#334155', color: '#94a3b8', border: 'none', padding: '10px 16px', borderRadius: '8px', cursor: 'pointer' }}>
-            Clear
-          </button>
-        )}
       </div>
 
       {/* Entries Table */}

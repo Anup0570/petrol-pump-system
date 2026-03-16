@@ -3,7 +3,10 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
+import { useRouter } from 'next/navigation'
+
 export default function DashboardActions() {
+  const router = useRouter()
   const [showDelivery, setShowDelivery] = useState(false)
   const [fuelType, setFuelType] = useState('petrol')
   const [litres, setLitres] = useState('')
@@ -33,10 +36,14 @@ export default function DashboardActions() {
 
   return (
     <>
-      <div className="flex gap-3 mb-4">
+      <div className="flex flex-wrap gap-3 mb-4">
         <button onClick={() => setShowDelivery(true)} 
           style={{ padding: '12px 24px', cursor: 'pointer', fontSize: '14px', fontWeight: 600, background: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '12px', boxShadow: '0 4px 10px rgba(37,99,235,0.2)', transition: 'all 0.2s ease' }}>
           <i className="fa-solid fa-truck mr-2"></i>Log Fuel Delivery
+        </button>
+        <button onClick={() => router.push('/admin/entries')} 
+          style={{ padding: '12px 24px', cursor: 'pointer', fontSize: '14px', fontWeight: 600, background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '12px', boxShadow: '0 4px 10px rgba(16,185,129,0.2)', transition: 'all 0.2s ease' }}>
+          <i className="fa-solid fa-check-double mr-2"></i>Shift Approvals
         </button>
       </div>
 
