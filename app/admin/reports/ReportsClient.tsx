@@ -87,7 +87,7 @@ export default function ReportsClient({ entries }: { entries: FuelEntry[] }) {
       {/* Date Filter */}
       <div className="glass-panel mb-6 flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-white">Analytics Overview</h3>
+          <h3 className="font-semibold text-slate-800">Analytics Overview</h3>
           <p className="text-xs text-slate-400 mt-1">Showing data for the selected period</p>
         </div>
         <select value={days} onChange={e => setDays(Number(e.target.value))} style={{ width: '160px', background: '#334155' }}>

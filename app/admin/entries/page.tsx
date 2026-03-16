@@ -18,7 +18,7 @@ export default async function EntriesPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white">Shift Entries</h1>
+        <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Shift Entries</h1>
         <p className="text-sm mt-1" style={{ color: '#64748b' }}>View, verify, and manage all staff shift submissions</p>
       </div>
       <EntriesClient initialEntries={entries || []} isAdmin={isAdmin} />

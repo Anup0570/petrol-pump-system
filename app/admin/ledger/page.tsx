@@ -11,8 +11,8 @@ export default async function LedgerPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white">Credit Ledger</h1>
-        <p className="text-sm mt-1" style={{ color: '#64748b' }}>Track all credit sales (khata) and mark when payments are received</p>
+        <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Credit Ledger</h1>
+        <p className="text-sm mt-1" style={{ color: '#64748b' }}>Track outstanding credits and payments received</p>
       </div>
       <LedgerClient initialEntries={entries || []} />
     </div>

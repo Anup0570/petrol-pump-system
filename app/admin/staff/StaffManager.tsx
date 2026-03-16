@@ -53,11 +53,11 @@ export default function StaffManager({ initialStaff }: { initialStaff: any[] }) 
   }
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 350px', gap: '24px', alignItems: 'start' }}>
+    <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_350px] gap-6 items-start">
       {/* Left Col: Staff List */}
       <div className="glass-panel">
-        <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-          <i className="fa-solid fa-users text-blue-400"></i> Active Staff Names
+        <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
+          <i className="fa-solid fa-users text-blue-500"></i> Active Staff Names
         </h3>
 
         {error && <div className="mb-4 p-3 rounded text-sm" style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }}>{error}</div>}
@@ -75,10 +75,10 @@ export default function StaffManager({ initialStaff }: { initialStaff: any[] }) 
               {initialStaff.length === 0 ? (
                 <tr><td colSpan={2} style={{ padding: '24px', textAlign: 'center', color: '#4b5563' }}>No staff names added yet.</td></tr>
               ) : initialStaff.map((staff: any) => (
-                <tr key={staff.id} style={{ borderBottom: '1px solid #1e293b' }}>
-                  <td style={{ padding: '12px', color: '#e2e8f0', fontWeight: 500 }}>
+                <tr key={staff.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                  <td style={{ padding: '12px', color: '#1e293b', fontWeight: 400 }}>
                     <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-xs text-slate-400">
+                      <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs text-slate-600 font-medium">
                         {staff.name.charAt(0).toUpperCase()}
                       </div>
                       {staff.name}
@@ -101,14 +101,14 @@ export default function StaffManager({ initialStaff }: { initialStaff: any[] }) 
 
       {/* Right Col: Add Form */}
       <div className="glass-panel">
-        <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-          <i className="fa-solid fa-user-plus text-blue-400"></i> Add New Staff
+        <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
+          <i className="fa-solid fa-user-plus text-blue-500"></i> Add New Staff
         </h3>
 
         <form onSubmit={handleAdd} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">Staff Name</label>
-            <input type="text" name="name" required placeholder="e.g., Ravi" className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500 text-sm" />
+            <label className="block text-sm font-medium text-slate-700 mb-1">Staff Name</label>
+            <input type="text" name="name" required placeholder="e.g., Ravi" className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-slate-800 outline-none focus:border-blue-500 text-sm shadow-sm" />
           </div>
 
           <button type="submit" disabled={loading} style={{ 

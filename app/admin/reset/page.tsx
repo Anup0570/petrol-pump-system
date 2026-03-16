@@ -16,9 +16,9 @@ export default async function ResetPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white">Emergency Pump Reset</h1>
-        <p className="text-sm mt-1" style={{ color: '#ef4444' }}>
-          Use this only if a manager submitted wrong meter readings. This force-resets the starting readings for the next shift.
+        <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Emergency Pump Reset</h1>
+        <p className="text-sm mt-1 flex items-center gap-2" style={{ color: '#ef4444' }}>
+          <i className="fa-solid fa-triangle-exclamation"></i>Use this only if a manager submitted wrong meter readings. This force-resets the starting readings for the next shift.
         </p>
       </div>
       <ResetForm adminName={profile?.name || user.email || 'Admin'} />

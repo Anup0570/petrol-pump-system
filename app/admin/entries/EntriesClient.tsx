@@ -70,7 +70,7 @@ export default function EntriesClient({ initialEntries, isAdmin = false }: { ini
       {/* Entries Table */}
       <div className="glass-panel overflow-x-auto">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-semibold text-white">
+          <h3 className="font-semibold text-slate-800">
             {filtered.length} {filtered.length === 1 ? 'Entry' : 'Entries'}
           </h3>
         </div>
@@ -90,11 +90,11 @@ export default function EntriesClient({ initialEntries, isAdmin = false }: { ini
               const creditGivenTotal = (entry.credit_given || []).reduce((s, c) => s + c.amt, 0)
               return (
                 <>
-                  <tr key={entry.id} style={{ borderBottom: '1px solid #1e293b', cursor: 'pointer' }}
+                  <tr key={entry.id} style={{ borderBottom: '1px solid #e2e8f0', cursor: 'pointer' }}
                     onClick={() => setExpanded(expanded === entry.id ? null : entry.id)}>
-                    <td style={{ padding: '10px 12px', color: '#e2e8f0', whiteSpace: 'nowrap' }}>{format(new Date(entry.created_at), 'dd MMM, hh:mm a')}</td>
-                    <td style={{ padding: '10px 12px', color: '#e2e8f0', fontWeight: 500 }}>{entry.staff_name}</td>
-                    <td style={{ padding: '10px 12px', color: '#94a3b8' }}>{entry.shift_type?.replace(' Shift', '')}</td>
+                    <td style={{ padding: '10px 12px', color: '#1e293b', whiteSpace: 'nowrap' }}>{format(new Date(entry.created_at), 'dd MMM, hh:mm a')}</td>
+                    <td style={{ padding: '10px 12px', color: '#1e293b', fontWeight: 500 }}>{entry.staff_name}</td>
+                    <td style={{ padding: '10px 12px', color: '#475569' }}>{entry.shift_type?.replace(' Shift', '')}</td>
                     <td style={{ padding: '10px 12px', color: '#fbbf24', fontWeight: 600 }}>₹{(entry.gross_sales || 0).toFixed(0)}</td>
                     <td style={{ padding: '10px 12px', color: '#34d399' }}>₹{(entry.expected_cash || 0).toFixed(0)}</td>
                     <td style={{ padding: '10px 12px', color: '#60a5fa' }}>₹{(entry.gpay_amount || 0).toFixed(0)}</td>
@@ -132,7 +132,7 @@ export default function EntriesClient({ initialEntries, isAdmin = false }: { ini
                     </td>
                   </tr>
                   {expanded === entry.id && (
-                    <tr key={`${entry.id}-detail`} style={{ background: '#0f172a' }}>
+                    <tr key={`${entry.id}-detail`} style={{ background: '#f8fafc' }}>
                       <td colSpan={12} style={{ padding: '16px 24px' }}>
                         <EntryDetail entry={entry} />
                       </td>
@@ -153,17 +153,17 @@ function EntryDetail({ entry }: { entry: FuelEntry }) {
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', fontSize: '13px' }}>
       {/* Nozzle Readings */}
       <div>
-        <h4 className="text-sm font-semibold mb-3" style={{ color: '#94a3b8' }}>Nozzle Readings</h4>
+        <h4 className="text-sm font-semibold mb-3" style={{ color: '#475569' }}>Nozzle Readings</h4>
         {(entry.nozzle_readings || []).map((n: any) => (
-          <div key={n.id} className="flex justify-between py-1" style={{ borderBottom: '1px solid #1e293b' }}>
+          <div key={n.id} className="flex justify-between py-1" style={{ borderBottom: '1px solid #e2e8f0' }}>
             <span style={{ color: '#64748b' }}>{n.label}</span>
-            <span style={{ color: '#e2e8f0' }}>{n.open} → {n.close} <span style={{ color: '#64748b' }}>({n.volume?.toFixed(2)}L)</span></span>
+            <span style={{ color: '#1e293b' }}>{n.open} → {n.close} <span style={{ color: '#64748b' }}>({n.volume?.toFixed(2)}L)</span></span>
           </div>
         ))}
       </div>
       {/* Financials */}
       <div>
-        <h4 className="text-sm font-semibold mb-3" style={{ color: '#94a3b8' }}>Financial Breakdown</h4>
+        <h4 className="text-sm font-semibold mb-3" style={{ color: '#475569' }}>Financial Breakdown</h4>
         {[
           { l: 'Rate Petrol', v: `₹${entry.rate_petrol}/L` },
           { l: 'Rate Diesel', v: `₹${entry.rate_diesel}/L` },
@@ -172,9 +172,9 @@ function EntryDetail({ entry }: { entry: FuelEntry }) {
           { l: 'Expenses', v: `₹${entry.expense_amount} ${entry.expense_desc ? `(${entry.expense_desc})` : ''}` },
           { l: 'Counted Cash', v: `₹${entry.counted_cash}` },
         ].map(({ l, v }) => (
-          <div key={l} className="flex justify-between py-1" style={{ borderBottom: '1px solid #1e293b' }}>
+          <div key={l} className="flex justify-between py-1" style={{ borderBottom: '1px solid #e2e8f0' }}>
             <span style={{ color: '#64748b' }}>{l}</span>
-            <span style={{ color: '#e2e8f0' }}>{v}</span>
+            <span style={{ color: '#1e293b' }}>{v}</span>
           </div>
         ))}
       </div>

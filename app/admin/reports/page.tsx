@@ -11,8 +11,8 @@ export default async function ReportsPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white">Analytics & Reports</h1>
-        <p className="text-sm mt-1" style={{ color: '#64748b' }}>Visual breakdown of sales and operations</p>
+        <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Analytics & Reports</h1>
+        <p className="text-sm mt-1" style={{ color: '#64748b' }}>Generate shift performance and financial reports</p>
       </div>
       <ReportsClient entries={entries || []} />
     </div>

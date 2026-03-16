@@ -102,9 +102,9 @@ export default async function DashboardPage() {
           <div className="flex items-center justify-between mb-3 px-1">
             <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Key Metrics</h2>
           </div>
-          <div className="flex overflow-x-auto gap-4 pb-4 snap-x pr-4 -mr-4 pl-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <div className="flex flex-col gap-4">
             {kpis.map(kpi => (
-              <div key={kpi.label} className="snap-start shrink-0 w-[240px]">
+              <div key={kpi.label} className="w-full">
                 <KpiCard kpi={kpi} />
               </div>
             ))}

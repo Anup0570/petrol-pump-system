@@ -24,10 +24,8 @@ export default async function TankResetPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white">Tank Stock Correction</h1>
-        <p className="text-sm mt-1" style={{ color: '#ef4444' }}>
-          Use this option only if tank stock is incorrect due to wrong delivery entries or shift mistakes. This will override the current tank stock.
-        </p>
+        <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Tank Stock Correction</h1>
+        <p className="text-sm mt-1" style={{ color: '#64748b' }}>Manually adjust underground tank inventory levels</p>
       </div>
       <ResetForm 
         adminName={profile?.name || user.email || 'Admin'} 

@@ -69,7 +69,7 @@ export default function LedgerClient({ initialEntries }: { initialEntries: Credi
             <i className="fa-solid fa-book-open" style={{ color: '#f87171', fontSize: '20px' }}></i>
           </div>
           <div>
-            <div className="text-2xl font-bold text-white">₹{totalOutstanding.toLocaleString('en-IN')}</div>
+            <div className="text-2xl font-bold text-slate-800">₹{totalOutstanding.toLocaleString('en-IN')}</div>
             <div style={{ color: '#64748b', fontSize: '13px' }}>Total Outstanding ({entries.filter(e => e.status === 'Pending').length} accounts)</div>
           </div>
         </div>
@@ -151,7 +151,7 @@ export default function LedgerClient({ initialEntries }: { initialEntries: Credi
       {showAdd && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '16px' }}>
           <div className="glass-panel" style={{ width: '100%', maxWidth: '420px', padding: '28px' }}>
-            <h3 className="font-bold text-white mb-5 text-lg">
+            <h3 className="font-bold text-slate-800 mb-5 text-lg">
               <i className="fa-solid fa-plus mr-2" style={{ color: '#60a5fa' }}></i>Add Credit Entry
             </h3>
             <div className="space-y-3">

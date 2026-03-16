@@ -51,23 +51,23 @@ export default function ResetForm({ adminName, petrolStock, dieselStock, petrolC
         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
           <div>
             <div className="flex justify-between items-center mb-1">
-              <label className="block text-sm font-medium text-white">Petrol Tank Current Stock (Litres)</label>
-              <span className="text-xs text-slate-400">Capacity: {petrolCapacity.toLocaleString()} L</span>
+              <label className="block text-sm font-medium text-slate-700">Petrol Tank Current Stock (Litres)</label>
+              <span className="text-xs text-slate-500">Capacity: {petrolCapacity.toLocaleString()} L</span>
             </div>
-            <input type="number" step="0.01" name="petrolStock" defaultValue={petrolStock} required className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500" />
+            <input type="number" step="0.01" name="petrolStock" defaultValue={petrolStock} required className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-slate-800 outline-none focus:border-blue-500 shadow-sm" />
           </div>
 
           <div>
             <div className="flex justify-between items-center mb-1">
-              <label className="block text-sm font-medium text-white">Diesel Tank Current Stock (Litres)</label>
-              <span className="text-xs text-slate-400">Capacity: {dieselCapacity.toLocaleString()} L</span>
+              <label className="block text-sm font-medium text-slate-700">Diesel Tank Current Stock (Litres)</label>
+              <span className="text-xs text-slate-500">Capacity: {dieselCapacity.toLocaleString()} L</span>
             </div>
-            <input type="number" step="0.01" name="dieselStock" defaultValue={dieselStock} required className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500" />
+            <input type="number" step="0.01" name="dieselStock" defaultValue={dieselStock} required className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-slate-800 outline-none focus:border-blue-500 shadow-sm" />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-white mb-1">Reason for Correction (Optional)</label>
-            <textarea name="reason" rows={2} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500" placeholder="e.g., Fixing incorrect delivery entry"></textarea>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Reason for Correction (Optional)</label>
+            <textarea name="reason" rows={2} className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-slate-800 outline-none focus:border-blue-500 shadow-sm" placeholder="e.g., Fixing incorrect delivery entry"></textarea>
           </div>
         </div>
 
