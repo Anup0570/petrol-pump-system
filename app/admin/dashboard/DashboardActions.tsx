@@ -48,18 +48,18 @@ export default function DashboardActions() {
             </h3>
             <div className="mb-5">
               <label className="block text-sm mb-2 font-semibold text-slate-600">Fuel Type</label>
-              <select value={fuelType} onChange={e => setFuelType(e.target.value)} style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#0f172a', outline: 'none', fontSize: '15px', fontWeight: 500 }}>
+              <select value={fuelType} onChange={e => setFuelType(e.target.value)} style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#ffffff', color: '#0f172a', outline: 'none', fontSize: '15px', fontWeight: 500 }}>
                 <option value="petrol">Petrol</option>
                 <option value="diesel">Diesel</option>
               </select>
             </div>
             <div className="mb-8">
               <label className="block text-sm mb-2 font-semibold text-slate-600">Volume Delivered (Litres)</label>
-              <input type="number" value={litres} onChange={e => setLitres(e.target.value)} placeholder="e.g. 8000" min="1" style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#0f172a', outline: 'none', fontSize: '15px', fontWeight: 500 }} />
+              <input type="number" value={litres} onChange={e => setLitres(e.target.value)} placeholder="e.g. 8000" min="1" style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#ffffff', color: '#0f172a', outline: 'none', fontSize: '15px', fontWeight: 500 }} />
             </div>
             <div className="flex gap-3">
               <button onClick={() => setShowDelivery(false)}
-                style={{ flex: 1, padding: '14px', background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s', fontWeight: 600, fontSize: '15px' }}>Cancel</button>
+                style={{ flex: 1, padding: '14px', background: '#ffffff', color: '#475569', border: '1px solid #e2e8f0', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s', fontWeight: 600, fontSize: '15px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>Cancel</button>
               <button onClick={handleDelivery} disabled={saving}
                 style={{ flex: 1, padding: '14px', background: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 600, fontSize: '15px', opacity: saving ? 0.7 : 1, boxShadow: '0 4px 12px rgba(37,99,235,0.2)' }}>
                 {saving ? 'Saving...' : 'Save Load'}

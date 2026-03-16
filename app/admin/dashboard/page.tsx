@@ -100,7 +100,7 @@ export default async function DashboardPage() {
         <div className="overflow-x-auto">
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
             <thead>
-              <tr style={{ borderBottom: '2px solid #e2e8f0', background: '#f8fafc' }}>
+              <tr style={{ borderBottom: '2px solid #e2e8f0', background: '#ffffff' }}>
                 {['Date', 'Staff', 'Shift', 'Gross (₹)', 'Exp. Cash (₹)', 'Petrol (L)', 'Diesel (L)', 'Difference', 'Status', 'Action'].map((h, index) => (
                   <th key={index} style={{ padding: '14px 16px', textAlign: 'left', color: '#475569', fontWeight: 600, whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
@@ -159,13 +159,13 @@ function TankCard({ label, fuelType, current, capacity }: { label: string; fuelT
           <i className="fa-solid fa-gas-pump" style={{ color: fuelType === 'petrol' ? '#d97706' : '#2563eb' }}></i>
           {label}
         </h3>
-        <span style={{ padding: '4px 10px', borderRadius: '99px', fontSize: '12px', fontWeight: 600, background: isLow ? '#fef2f2' : '#f1f5f9', color: isLow ? '#ef4444' : '#64748b', border: `1px solid ${isLow ? '#fecaca' : '#e2e8f0'}` }}>
+        <span style={{ padding: '4px 10px', borderRadius: '99px', fontSize: '12px', fontWeight: 600, background: isLow ? '#fef2f2' : '#ffffff', color: isLow ? '#ef4444' : '#64748b', border: `1px solid ${isLow ? '#fecaca' : '#e2e8f0'}` }}>
           {isLow ? 'Low Stock' : 'Stock OK'}
         </span>
       </div>
       <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
         {/* Visual tank */}
-        <div style={{ width: '60px', height: '120px', background: '#f8fafc', borderRadius: '10px', border: '1px solid #cbd5e1', position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
+        <div style={{ width: '60px', height: '120px', background: '#ffffff', borderRadius: '10px', border: '1px solid #e2e8f0', position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
           <div style={{
             position: 'absolute', bottom: 0, width: '100%',
             height: `${pct}%`,
