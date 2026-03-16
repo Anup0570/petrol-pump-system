@@ -46,7 +46,7 @@ function LoginForm() {
           name="email"
           type="email"
           required
-          className="w-full p-2 rounded bg-slate-800 text-white"
+          className="w-full p-2 rounded bg-white border border-slate-300 text-slate-900"
           placeholder="you@saipriyafuels.com"
         />
       </div>
@@ -63,7 +63,7 @@ function LoginForm() {
           name="password"
           type="password"
           required
-          className="w-full p-2 rounded bg-slate-800 text-white"
+          className="w-full p-2 rounded bg-white border border-slate-300 text-slate-900"
           placeholder="••••••••"
         />
       </div>
@@ -77,14 +77,14 @@ export default function LoginPage() {
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4"
-      style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' }}
+      style={{ background: '#f8fafc' }}
     >
       <div className="w-full max-w-md">
 
         {/* Logo */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-white">Sai Priya Fuels</h1>
-          <p className="text-sm mt-1" style={{ color: '#94a3b8' }}>
+          <h1 className="text-2xl font-bold text-slate-800">Sai Priya Fuels</h1>
+          <p className="text-sm mt-1" style={{ color: '#64748b' }}>
             Shift Management System
           </p>
         </div>
@@ -92,11 +92,11 @@ export default function LoginPage() {
         {/* Card */}
         <div
           className="glass-panel"
-          style={{ padding: '32px', background: '#1e293b', borderRadius: '12px' }}
+          style={{ padding: '32px', background: '#ffffff', borderRadius: '12px' }}
         >
-          <h2 className="text-lg font-semibold mb-6 text-white">Sign In</h2>
+          <h2 className="text-lg font-semibold mb-6 text-slate-800">Sign In</h2>
 
-          <Suspense fallback={<div className="text-white text-center">Loading...</div>}>
+          <Suspense fallback={<div className="text-slate-600 text-center">Loading...</div>}>
             <LoginForm />
           </Suspense>
         </div>

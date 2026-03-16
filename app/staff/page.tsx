@@ -70,15 +70,15 @@ export default async function StaffPage() {
   const staffNames = staffList?.map(s => s.name) || []
 
   return (
-    <div className="min-h-screen" style={{ background: '#0f172a' }}>
+    <div className="min-h-screen" style={{ background: '#ffffff' }}>
       {/* Top Nav */}
-      <div style={{ background: '#1e293b', borderBottom: '1px solid #334155', padding: '12px 24px', position: 'sticky', top: 0, zIndex: 50 }}>
+      <div style={{ background: '#ffffff', borderBottom: '1px solid #e2e8f0', padding: '12px 24px', position: 'sticky', top: 0, zIndex: 50, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #2563eb, #7c3aed)' }}>
               <i className="fa-solid fa-gas-pump text-white text-sm"></i>
             </div>
-            <span className="font-bold text-white text-lg">Sai Priya Fuels</span>
+            <span className="font-bold text-slate-800 text-lg">Sai Priya Fuels</span>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm" style={{ color: '#64748b' }}>
@@ -86,7 +86,7 @@ export default async function StaffPage() {
               {profile?.name || user.email}
             </span>
             <form action={logout}>
-              <button type="submit" style={{ background: '#334155', border: 'none', color: '#94a3b8', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' }}>
+              <button type="submit" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: '#475569', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' }}>
                 <i className="fa-solid fa-arrow-right-from-bracket mr-1"></i>Logout
               </button>
             </form>
@@ -97,7 +97,7 @@ export default async function StaffPage() {
       <div className="max-w-7xl mx-auto p-6">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white">Shift Handover</h1>
+          <h1 className="text-2xl font-bold text-slate-800">Shift Handover</h1>
           <p className="text-sm mt-1" style={{ color: '#64748b' }}>
             Enter digital payments first, then count the physical cash in the drawer and verify the difference before submitting.
           </p>
