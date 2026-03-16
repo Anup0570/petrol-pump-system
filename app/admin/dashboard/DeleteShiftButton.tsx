@@ -64,17 +64,17 @@ export default function DeleteShiftButton({ shiftId, petrolLitres, dieselLitres 
       disabled={deleting}
       title="Delete Shift"
       style={{
-        padding: '6px 10px',
-        background: 'rgba(239,68,68,0.1)',
-        color: '#f87171',
-        border: '1px solid rgba(239,68,68,0.2)',
-        borderRadius: '6px',
+        padding: '8px 12px',
+        background: '#fef2f2',
+        color: '#ef4444',
+        border: '1px solid #fecaca',
+        borderRadius: '8px',
         cursor: deleting ? 'not-allowed' : 'pointer',
-        fontSize: '12px',
+        fontSize: '13px',
         opacity: deleting ? 0.5 : 1,
         transition: 'all 0.2s ease',
       }}
-      className="hover:bg-red-500/20 hover:border-red-500/40"
+      className="hover:bg-red-100 hover:border-red-300"
     >
       <i className={`fa-solid ${deleting ? 'fa-spinner fa-spin' : 'fa-trash'}`}></i>
     </button>

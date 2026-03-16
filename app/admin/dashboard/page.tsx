@@ -53,30 +53,32 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white">Owner Dashboard</h1>
-        <p className="text-sm mt-1" style={{ color: '#64748b' }}>
-          {format(new Date(), "EEEE, d MMMM yyyy")} — Live inventory and shift reports
-        </p>
+      <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Owner Dashboard</h1>
+          <p className="text-sm mt-1" style={{ color: '#64748b' }}>
+            {format(new Date(), "EEEE, d MMMM yyyy")} — Live inventory and shift reports
+          </p>
+        </div>
       </div>
 
       {/* KPI Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {kpis.map(kpi => (
-          <div key={kpi.label} className="glass-panel" style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: kpi.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <i className={`fa-solid ${kpi.icon}`} style={{ color: kpi.color, fontSize: '18px' }}></i>
-            </div>
+          <div key={kpi.label} style={{ background: '#ffffff', borderRadius: '16px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
             <div>
-              <div className="text-xl font-bold text-white">{kpi.value}</div>
-              <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>{kpi.label}</div>
+              <div style={{ fontSize: '13px', color: '#64748b', fontWeight: 600, marginBottom: '8px' }}>{kpi.label}</div>
+              <div className="text-2xl font-bold text-slate-800">{kpi.value}</div>
+            </div>
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: kpi.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <i className={`fa-solid ${kpi.icon}`} style={{ color: kpi.color, fontSize: '20px' }}></i>
             </div>
           </div>
         ))}
       </div>
 
       {/* Tank Inventory */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <TankCard label="Petrol Tank" fuelType="petrol" current={petrolTank.current_stock} capacity={petrolTank.capacity} />
         <TankCard label="Diesel Tank" fuelType="diesel" current={dieselTank.current_stock} capacity={dieselTank.capacity} />
       </div>
@@ -85,48 +87,48 @@ export default async function DashboardPage() {
       <DashboardActions />
 
       {/* Recent Shifts Table */}
-      <div className="glass-panel mt-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-white flex items-center gap-2">
-            <i className="fa-solid fa-table-list" style={{ color: '#60a5fa' }}></i>
+      <div style={{ background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', padding: '24px', marginTop: '24px' }}>
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="font-bold text-slate-800 flex items-center gap-2 text-lg">
+            <i className="fa-solid fa-table-list" style={{ color: '#3b82f6' }}></i>
             Recent Shifts
           </h3>
-          <a href="/admin/entries" style={{ fontSize: '13px', color: '#60a5fa', textDecoration: 'none' }}>
+          <a href="/admin/entries" style={{ fontSize: '14px', color: '#2563eb', fontWeight: 600, textDecoration: 'none' }}>
             View all <i className="fa-solid fa-arrow-right ml-1"></i>
           </a>
         </div>
         <div className="overflow-x-auto">
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid #334155' }}>
-                {['Date', 'Staff', 'Shift', 'Gross (₹)', 'Exp. Cash (₹)', 'Petrol (L)', 'Diesel (L)', 'Difference', 'Status', ''].map((h, index) => (
-                  <th key={index} style={{ padding: '10px 12px', textAlign: 'left', color: '#64748b', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
+              <tr style={{ borderBottom: '2px solid #e2e8f0', background: '#f8fafc' }}>
+                {['Date', 'Staff', 'Shift', 'Gross (₹)', 'Exp. Cash (₹)', 'Petrol (L)', 'Diesel (L)', 'Difference', 'Status', 'Action'].map((h, index) => (
+                  <th key={index} style={{ padding: '14px 16px', textAlign: 'left', color: '#475569', fontWeight: 600, whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {(recentEntries || []).length === 0 ? (
-                <tr><td colSpan={9} style={{ padding: '24px', textAlign: 'center', color: '#4b5563' }}>No shift entries yet.</td></tr>
+                <tr><td colSpan={10} style={{ padding: '32px', textAlign: 'center', color: '#64748b' }}>No shift entries yet.</td></tr>
               ) : (recentEntries || []).map((entry: any) => {
                 const diff = entry.difference || 0
                 return (
-                  <tr key={entry.id} style={{ borderBottom: '1px solid #1e293b' }}>
-                    <td style={{ padding: '10px 12px', color: '#e2e8f0' }}>{format(new Date(entry.created_at), 'dd MMM, hh:mm a')}</td>
-                    <td style={{ padding: '10px 12px', color: '#e2e8f0' }}>{entry.staff_name}</td>
-                    <td style={{ padding: '10px 12px', color: '#94a3b8' }}>{entry.shift_type}</td>
-                    <td style={{ padding: '10px 12px', color: '#fbbf24', fontWeight: 600 }}>₹{(entry.gross_sales || 0).toFixed(0)}</td>
-                    <td style={{ padding: '10px 12px', color: '#34d399', fontWeight: 600 }}>₹{(entry.expected_cash || 0).toFixed(0)}</td>
-                    <td style={{ padding: '10px 12px', color: '#fbbf24' }}>{(entry.petrol_litres || 0).toFixed(1)}</td>
-                    <td style={{ padding: '10px 12px', color: '#60a5fa' }}>{(entry.diesel_litres || 0).toFixed(1)}</td>
-                    <td style={{ padding: '10px 12px', fontWeight: 600, color: diff > 0 ? '#60a5fa' : diff < 0 ? '#f87171' : '#34d399' }}>
-                      {diff >= 0 ? '+' : ''}₹{diff.toFixed(0)}
+                  <tr key={entry.id} className="hover:bg-slate-50 transition-colors" style={{ borderBottom: '1px solid #e2e8f0' }}>
+                    <td style={{ padding: '14px 16px', color: '#0f172a', fontWeight: 500 }}>{format(new Date(entry.created_at), 'dd MMM, hh:mm a')}</td>
+                    <td style={{ padding: '14px 16px', color: '#334155' }}>{entry.staff_name}</td>
+                    <td style={{ padding: '14px 16px', color: '#64748b' }}>{entry.shift_type}</td>
+                    <td style={{ padding: '14px 16px', color: '#0f172a', fontWeight: 600 }}>₹{(entry.gross_sales || 0).toLocaleString()}</td>
+                    <td style={{ padding: '14px 16px', color: '#0f172a', fontWeight: 600 }}>₹{(entry.expected_cash || 0).toLocaleString()}</td>
+                    <td style={{ padding: '14px 16px', color: '#d97706', fontWeight: 500 }}>{(entry.petrol_litres || 0).toFixed(1)}</td>
+                    <td style={{ padding: '14px 16px', color: '#2563eb', fontWeight: 500 }}>{(entry.diesel_litres || 0).toFixed(1)}</td>
+                    <td style={{ padding: '14px 16px', fontWeight: 700, color: diff > 0 ? '#2563eb' : diff < 0 ? '#ef4444' : '#10b981' }}>
+                      {diff >= 0 ? '+' : ''}₹{diff.toLocaleString()}
                     </td>
-                    <td style={{ padding: '10px 12px' }}>
-                      <span className={`badge ${entry.status === 'Verified' ? 'status-verified' : 'status-pending'}`}>
+                    <td style={{ padding: '14px 16px' }}>
+                      <span className={`badge ${entry.status === 'Verified' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-100 text-amber-700 border border-amber-200'}`} style={{ padding: '4px 10px', borderRadius: '99px', fontSize: '12px', fontWeight: 600 }}>
                         {entry.status}
                       </span>
                     </td>
-                    <td style={{ padding: '10px 12px', textAlign: 'right' }}>
+                    <td style={{ padding: '14px 16px', textAlign: 'right' }}>
                       <DeleteShiftButton
                         shiftId={entry.id}
                         petrolLitres={entry.petrol_litres || 0}
@@ -151,31 +153,33 @@ function TankCard({ label, fuelType, current, capacity }: { label: string; fuelT
   const lightColor = fuelType === 'petrol' ? (isLow ? '#fca5a5' : '#fbbf24') : (isLow ? '#fca5a5' : '#60a5fa')
 
   return (
-    <div className="glass-panel">
-      <div className="flex justify-between items-center mb-3">
-        <h3 className="font-semibold text-white text-sm">{label}</h3>
-        <span className={`badge ${isLow ? '' : ''}`} style={{ background: isLow ? 'rgba(239,68,68,0.15)' : 'rgba(71,85,105,0.3)', color: isLow ? '#f87171' : '#94a3b8' }}>
-          {isLow ? 'Low Stock' : 'OK'}
+    <div style={{ background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', padding: '24px' }}>
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
+          <i className="fa-solid fa-gas-pump" style={{ color: fuelType === 'petrol' ? '#d97706' : '#2563eb' }}></i>
+          {label}
+        </h3>
+        <span style={{ padding: '4px 10px', borderRadius: '99px', fontSize: '12px', fontWeight: 600, background: isLow ? '#fef2f2' : '#f1f5f9', color: isLow ? '#ef4444' : '#64748b', border: `1px solid ${isLow ? '#fecaca' : '#e2e8f0'}` }}>
+          {isLow ? 'Low Stock' : 'Stock OK'}
         </span>
       </div>
-      <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-end' }}>
+      <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
         {/* Visual tank */}
-        <div style={{ width: '48px', height: '100px', background: '#0f172a', borderRadius: '8px', border: '1px solid #334155', position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
+        <div style={{ width: '60px', height: '120px', background: '#f8fafc', borderRadius: '10px', border: '1px solid #cbd5e1', position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
           <div style={{
             position: 'absolute', bottom: 0, width: '100%',
             height: `${pct}%`,
-            background: `linear-gradient(to top, ${color}, ${lightColor})`,
-            transition: 'height 0.5s ease',
-            borderRadius: '0 0 7px 7px'
+            background: color,
+            transition: 'height 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
           }}></div>
         </div>
         <div>
-          <div className="text-2xl font-bold text-white">{Math.round(current).toLocaleString()} L</div>
-          <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>of {capacity.toLocaleString()} L capacity</div>
-          <div style={{ marginTop: '8px', height: '6px', background: '#334155', borderRadius: '3px', overflow: 'hidden', width: '120px' }}>
-            <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(to right, ${color}, ${lightColor})`, borderRadius: '3px' }}></div>
+          <div className="text-3xl font-extrabold text-slate-800">{Math.round(current).toLocaleString()} <span className="text-lg text-slate-500 font-medium">L</span></div>
+          <div style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>of {capacity.toLocaleString()} L capacity</div>
+          <div style={{ marginTop: '12px', height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden', width: '140px' }}>
+            <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: '4px' }}></div>
           </div>
-          <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>{pct.toFixed(1)}% full</div>
+          <div style={{ fontSize: '12px', color: '#64748b', marginTop: '6px', fontWeight: 500 }}>{pct.toFixed(1)}% Full</div>
         </div>
       </div>
     </div>
