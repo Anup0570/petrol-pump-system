@@ -24,7 +24,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="admin-theme" style={{ display: 'flex', minHeight: '100vh', background: '#ffffff', color: '#0f172a' }}>
       <AdminSidebar adminName={(profile as any)?.name || 'Admin'} />
-      <main style={{ marginLeft: '240px', flex: 1, padding: '28px', minWidth: 0 }}>
+      <main className="flex-1 min-w-0 md:ml-[240px] pt-20 px-4 pb-8 md:p-7 w-full md:w-[calc(100%-240px)]">
         {children}
       </main>
     </div>
