@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase/server'
 import { format } from 'date-fns'
 import DashboardActions from './DashboardActions'
 import DeleteShiftButton from './DeleteShiftButton'
-import MobileCollapsible from './MobileCollapsible'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -75,57 +74,13 @@ export default async function DashboardPage() {
           <TankCard label="Petrol Tank" fuelType="petrol" current={petrolTank.current_stock} capacity={petrolTank.capacity} />
           <TankCard label="Diesel Tank" fuelType="diesel" current={dieselTank.current_stock} capacity={dieselTank.capacity} />
         </div>
-      </div>
 
-      {/* --- MOBILE LAYOUT --- */}
-      <div className="md:hidden mb-6">
-        {/* Top 2 Cards: Gross Sales & Cash Collected */}
-        <div className="grid grid-cols-1 gap-4 mb-4">
-          <KpiCard kpi={kpis[0]} />
-          <KpiCard kpi={kpis[1]} />
+        {/* Actions Row */}
+        <div className="mb-8">
+          <DashboardActions />
         </div>
 
-        <MobileCollapsible title="Payment Summary" icon="fa-money-bill-transfer">
-          <div className="grid grid-cols-1 gap-3">
-            <KpiCard kpi={kpis[2]} />
-            <KpiCard kpi={kpis[3]} />
-            <KpiCard kpi={kpis[6]} />
-            <KpiCard kpi={kpis[7]} />
-          </div>
-        </MobileCollapsible>
-
-        <MobileCollapsible title="Fuel Sales" icon="fa-gas-pump">
-          <div className="grid grid-cols-1 gap-3">
-            <KpiCard kpi={kpis[4]} />
-            <KpiCard kpi={kpis[5]} />
-          </div>
-        </MobileCollapsible>
-      </div>
-
-      {/* --- ACTIONS ROW (Visible on both) --- */}
-      <div className="mb-6 md:mb-8">
-        <DashboardActions />
-      </div>
-
-      {/* --- MOBILE TANKS & SHIFTS --- */}
-      <div className="md:hidden">
-        <MobileCollapsible title="Tank Status" icon="fa-database">
-          <div className="grid grid-cols-1 gap-4">
-            <TankCard label="Petrol Tank" fuelType="petrol" current={petrolTank.current_stock} capacity={petrolTank.capacity} />
-            <TankCard label="Diesel Tank" fuelType="diesel" current={dieselTank.current_stock} capacity={dieselTank.capacity} />
-          </div>
-        </MobileCollapsible>
-
-        <MobileCollapsible title="Recent Shifts" icon="fa-table-list">
-          <RecentShiftsTable recentEntries={recentEntries || []} />
-          <div className="mt-4 text-center pb-2">
-            <a href="/admin/entries" className="text-sm font-semibold text-blue-600">View all shifts →</a>
-          </div>
-        </MobileCollapsible>
-      </div>
-
-      {/* --- DESKTOP RECENT SHIFTS --- */}
-      <div className="hidden md:block">
+        {/* Recent Shifts Table */}
         <div style={{ background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', padding: '24px' }}>
           <div className="flex items-center justify-between mb-6">
             <h3 className="font-bold text-slate-800 flex items-center gap-2 text-lg">
@@ -138,6 +93,55 @@ export default async function DashboardPage() {
           </div>
           <RecentShiftsTable recentEntries={recentEntries || []} />
         </div>
+      </div>
+
+      {/* --- MOBILE LAYOUT --- */}
+      <div className="md:hidden space-y-8 mb-8 pb-4">
+        {/* Section 1 - Key Metrics */}
+        <section>
+          <div className="flex items-center justify-between mb-3 px-1">
+            <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Key Metrics</h2>
+          </div>
+          <div className="flex overflow-x-auto gap-4 pb-4 snap-x pr-4 -mr-4 pl-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            {kpis.map(kpi => (
+              <div key={kpi.label} className="snap-start shrink-0 w-[240px]">
+                <KpiCard kpi={kpi} />
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Section 2 - Fuel Tank Status */}
+        <section>
+          <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 px-1">Fuel Tank Status</h2>
+          <div className="grid grid-cols-1 gap-4">
+            <TankCard label="Petrol Tank" fuelType="petrol" current={petrolTank.current_stock} capacity={petrolTank.capacity} />
+            <TankCard label="Diesel Tank" fuelType="diesel" current={dieselTank.current_stock} capacity={dieselTank.capacity} />
+          </div>
+        </section>
+
+        {/* Section 3 - Quick Action */}
+        <section>
+          <DashboardActions />
+        </section>
+
+        {/* Section 4 - Recent Shifts */}
+        <section>
+          <div className="flex items-center justify-between mb-4 px-1">
+            <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Recent Shifts</h2>
+            <a href="/admin/entries" className="text-sm font-semibold text-blue-600">View all →</a>
+          </div>
+          <div className="space-y-4">
+            {(recentEntries || []).length === 0 ? (
+              <div style={{ background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '32px', textAlign: 'center', color: '#64748b', fontSize: '14px' }}>No shift entries yet.</div>
+            ) : (recentEntries || []).map((entry: any) => (
+              <MobileShiftCard key={entry.id} entry={entry} />
+            ))}
+          </div>
+          <div className="mt-6 text-center">
+            <a href="/admin/entries" className="inline-block text-sm font-semibold text-blue-600 bg-blue-50 py-3 px-6 rounded-xl w-full text-center border border-blue-100">View all shifts →</a>
+          </div>
+        </section>
       </div>
     </div>
   )
@@ -240,6 +244,48 @@ function TankCard({ label, fuelType, current, capacity }: { label: string; fuelT
             <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: '4px' }}></div>
           </div>
           <div style={{ fontSize: '12px', color: '#64748b', marginTop: '6px', fontWeight: 500 }}>{pct.toFixed(1)}% Full</div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function MobileShiftCard({ entry }: { entry: any }) {
+  const diff = entry.difference || 0;
+  return (
+    <div style={{ background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.05)', padding: '20px' }}>
+      <div className="flex justify-between items-start mb-4">
+        <div>
+          <div className="font-bold text-slate-800 text-base">{entry.staff_name}</div>
+          <div className="text-xs font-medium mt-1" style={{ color: '#64748b' }}>
+            {format(new Date(entry.created_at), 'dd MMM, hh:mm a')} • {entry.shift_type}
+          </div>
+        </div>
+        <span className={`badge ${entry.status === 'Verified' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-100 text-amber-700 border border-amber-200'}`} style={{ padding: '4px 10px', borderRadius: '99px', fontSize: '12px', fontWeight: 600 }}>
+          {entry.status}
+        </span>
+      </div>
+      
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
+          <div className="text-xs font-medium mb-1" style={{ color: '#64748b' }}>Gross Sales</div>
+          <div className="font-bold text-slate-800">₹{(entry.gross_sales || 0).toLocaleString()}</div>
+        </div>
+        <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
+          <div className="text-xs font-medium mb-1" style={{ color: '#64748b' }}>Exp. Cash</div>
+          <div className="font-bold text-slate-800">₹{(entry.expected_cash || 0).toLocaleString()}</div>
+        </div>
+      </div>
+      
+      <div className="flex items-center justify-between pt-4" style={{ borderTop: '1px solid #e2e8f0' }}>
+        <div>
+           <div className="text-xs font-medium mb-1" style={{ color: '#64748b' }}>Difference</div>
+           <div className="font-bold text-base" style={{ color: diff > 0 ? '#2563eb' : diff < 0 ? '#ef4444' : '#10b981' }}>
+             {diff >= 0 ? '+' : ''}₹{diff.toLocaleString()}
+           </div>
+        </div>
+        <div>
+           <DeleteShiftButton shiftId={entry.id} petrolLitres={entry.petrol_litres || 0} dieselLitres={entry.diesel_litres || 0} />
         </div>
       </div>
     </div>
