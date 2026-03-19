@@ -10,7 +10,7 @@ const NOZZLES: Omit<NozzleReading, 'close' | 'volume'>[] = [
   { id: 'p1n2', label: 'Nozzle 2 (P1)', fuelType: 'diesel', open: 0 },
   { id: 'p2n3', label: 'Nozzle 3 (P2)', fuelType: 'petrol', open: 0 },
   { id: 'p2n4', label: 'Nozzle 4 (P2)', fuelType: 'diesel', open: 0 },
-  { id: 'oil',  label: 'Dispenser',      fuelType: 'oil',    open: 0 },
+  { id: 'oil', label: 'Dispenser', fuelType: 'oil', open: 0 },
 ]
 
 const DENOMINATIONS = [500, 200, 100, 50, 20, 10, 5, 2, 1] as const
@@ -93,13 +93,14 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
     if (expenseAmt > 0 && !expenseDesc.trim()) { alert('Please enter expense description.'); return }
 
     setSubmitting(true)
-    
+
     // Calculate final inserted dates
     const finalDateStr = shiftDate || new Date().toISOString()
     const finalDateObj = new Date(finalDateStr)
     const shiftDateOnly = finalDateObj.getFullYear() + '-' + String(finalDateObj.getMonth() + 1).padStart(2, '0') + '-' + String(finalDateObj.getDate()).padStart(2, '0')
 
     const supabase = createClient()
+    console.log('Before shift insert:', { staffName, shiftDateOnly, grossSales });
     const { error } = await supabase.from('fuel_entries').insert({
       created_at: finalDateObj.toISOString(),
       shift_date: shiftDateOnly,
@@ -126,10 +127,30 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
       status: 'Pending'
     })
 
+    console.log('After shift insert, error:', error);
+
     if (error) {
       alert('Error submitting shift: ' + error.message)
       setSubmitting(false)
       return
+    }
+
+    console.log('Before WhatsApp call');
+    try {
+      const waRes = await fetch("https://cbpdteymzglrwfgeepys.supabase.co/functions/v1/send-whatsapp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNicGR0ZXltemdscndmZ2VlcHlzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxMjI0NDYsImV4cCI6MjA4ODY5ODQ0Nn0.DrAu9xietiI1faei-tKOG8-Uh0QX8ZoHPCb5GT5iORY",
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNicGR0ZXltemdscndmZ2VlcHlzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxMjI0NDYsImV4cCI6MjA4ODY5ODQ0Nn0.DrAu9xietiI1faei-tKOG8-Uh0QX8ZoHPCb5GT5iORY"
+        },
+        body: JSON.stringify({
+          message: `Shift Submitted Successfully\nStaff: ${staffName}\nDate: ${shiftDateOnly}\nTotal expected: ₹${expectedCash}\nTotal counted: ₹${countedCash}`
+        })
+      });
+      console.log('After WhatsApp call, status:', waRes.status);
+    } catch (waErr) {
+      console.error('WhatsApp API call failed:', waErr);
     }
 
     // Update tank inventory
@@ -148,7 +169,7 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center animate-fade-in">
           <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
-               style={{ background: 'rgba(16,185,129,0.2)', border: '2px solid #10b981' }}>
+            style={{ background: 'rgba(16,185,129,0.2)', border: '2px solid #10b981' }}>
             <i className="fa-solid fa-check text-3xl" style={{ color: '#10b981' }}></i>
           </div>
           <h2 className="text-2xl font-bold text-slate-800 mb-2">Shift Submitted!</h2>
@@ -464,7 +485,7 @@ function CreditSection({ type, label, items, setItems, nameVal, setName, amtVal,
     setItems(prev => [...prev, { name: nameVal.trim(), amt }])
     setName(''); setAmt('')
   }
-  
+
   const cardClass = type === 'given' ? 'credit-given-card' : 'credit-received-card';
   const color = type === 'given' ? '#ef4444' : '#10b981';
 
@@ -490,7 +511,7 @@ function CreditSection({ type, label, items, setItems, nameVal, setName, amtVal,
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', marginLeft: '12px', padding: 0, opacity: 0.8 }}
                 onMouseOver={e => e.currentTarget.style.opacity = '1'}
                 onMouseOut={e => e.currentTarget.style.opacity = '0.8'}
-                >
+              >
                 <i className="fa-solid fa-xmark"></i>
               </button>
             </span>
