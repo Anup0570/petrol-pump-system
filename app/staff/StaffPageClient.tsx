@@ -400,7 +400,7 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
             {/* Final Cash Box */}
             <div className="rounded-xl p-5 mb-6" style={{ background: 'linear-gradient(135deg, rgba(37,99,235,0.05), rgba(124,58,237,0.05))', border: '1px solid rgba(37,99,235,0.2)' }}>
               <p className="text-sm font-medium mb-1" style={{ color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cash to Give to Owner / Next Shift</p>
-              <p className="text-4xl font-bold text-slate-800">₹{expectedCash.toFixed(2)}</p>
+              <p className="text-4xl font-bold text-slate-800">₹{countedCash.toFixed(2)}</p>
             </div>
 
             <button type="submit" disabled={submitting}
