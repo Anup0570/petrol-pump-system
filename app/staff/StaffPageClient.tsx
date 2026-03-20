@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createBrowserClient } from '@supabase/ssr'
 import { logout } from '@/app/login/actions'
 import type { NozzleReading, CreditItem, Denomination } from '@/lib/types'
 
@@ -99,7 +99,19 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
     const finalDateObj = new Date(finalDateStr)
     const shiftDateOnly = finalDateObj.getFullYear() + '-' + String(finalDateObj.getMonth() + 1).padStart(2, '0') + '-' + String(finalDateObj.getDate()).padStart(2, '0')
 
-    const supabase = createClient()
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+
+    const { data: { session } } = await supabase.auth.getSession();
+    console.log("SESSION:", session);
+
+    if (!session) {
+      alert('Authentication error: You must be logged in to submit a shift.');
+      setSubmitting(false);
+      return;
+    }
     console.log('Before shift insert:', { staffName, shiftDateOnly, grossSales });
     const { data: shiftData, error } = await supabase.from('fuel_entries').insert({
       created_at: finalDateObj.toISOString(),
