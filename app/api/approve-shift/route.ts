@@ -9,54 +9,66 @@ export async function GET(request: Request) {
     return new NextResponse('Missing shift ID', { status: 400 });
   }
 
-  // Use the service key to bypass RLS for admin actions
   const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !supabaseServiceKey) {
-    return new NextResponse('Server configuration error (missing Supabase keys)', { status: 500 });
+    return new NextResponse('Server configuration error', { status: 500 });
   }
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
-    const { error } = await supabase
+    // ✅ 1. Approve shift
+    const { data, error } = await supabase
       .from('fuel_entries')
       .update({ status: 'Approved' })
-      .eq('id', id);
+      .eq('id', id)
+      .select()
+      .single();
 
     if (error) {
-      console.error('Error approving shift:', error);
-      return new NextResponse('Failed to approve shift: ' + error.message, { status: 500 });
+      return new NextResponse('Failed: ' + error.message, { status: 500 });
     }
 
+    // ✅ 2. WHATSAPP SEND (ADD THIS BLOCK 🔥)
+
+    const accountSid = process.env.TWILIO_ACCOUNT_SID!;
+    const authToken = process.env.TWILIO_AUTH_TOKEN!;
+
+    const message = `✅ Shift Approved
+Staff: ${data.staff_name || 'N/A'}
+Amount: ${data.total_amount || 'N/A'}`;
+
+    await fetch(
+      `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization:
+            'Basic ' + Buffer.from(`${accountSid}:${authToken}`).toString('base64'),
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          From: 'whatsapp:+14155238886', // Twilio sandbox number
+          To: 'whatsapp:+918072326551', // 👉 YOUR NUMBER
+          Body: message,
+        }),
+      }
+    );
+
+    // ✅ 3. Response
     return new NextResponse(`
-      <!DOCTYPE html>
       <html>
-        <head>
-          <title>Shift Approved</title>
-          <meta name="viewport" content="width=device-width, initial-scale=1">
-          <style>
-            body { font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #ecfdf5; color: #065f46; text-align: center; padding: 20px; }
-            .card { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-            h1 { margin-top: 0; font-size: 24px; }
-            .icon { font-size: 48px; margin-bottom: 20px; }
-            p { margin-bottom: 0; color: #047857; }
-          </style>
-        </head>
-        <body>
-          <div class="card">
-            <div class="icon">✅</div>
-            <h1>Shift Approved</h1>
-            <p>The shift has been successfully marked as Approved.</p>
-          </div>
+        <body style="font-family:sans-serif;text-align:center;margin-top:100px;">
+          <h2>✅ Shift Approved & WhatsApp Sent</h2>
         </body>
       </html>
     `, {
       headers: { 'Content-Type': 'text/html' }
     });
+
   } catch (err: any) {
-    console.error('Unexpected error approving shift:', err);
     return new NextResponse('Server Error', { status: 500 });
   }
 }
