@@ -101,7 +101,7 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
 
     const supabase = createClient()
     console.log('Before shift insert:', { staffName, shiftDateOnly, grossSales });
-    const { error } = await supabase.from('fuel_entries').insert({
+    const { data: shiftData, error } = await supabase.from('fuel_entries').insert({
       created_at: finalDateObj.toISOString(),
       shift_date: shiftDateOnly,
       shift_type: shiftType,
@@ -125,7 +125,7 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
       diesel_litres: Math.max(0, dieselLitres),
       test_performed: testPerformed,
       status: 'Pending'
-    })
+    }).select('id').single()
 
     console.log('After shift insert, error:', error);
 
@@ -137,6 +137,9 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
 
     console.log('Before WhatsApp call');
     try {
+      const formattedDate = String(finalDateObj.getDate()).padStart(2, '0') + '/' + String(finalDateObj.getMonth() + 1).padStart(2, '0') + '/' + finalDateObj.getFullYear();
+      const approvalLink = `${window.location.origin}/api/approve-shift?id=${shiftData?.id || ''}`;
+
       const waRes = await fetch("https://cbpdteymzglrwfgeepys.supabase.co/functions/v1/send-whatsapp", {
         method: "POST",
         headers: {
@@ -145,7 +148,7 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
           "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNicGR0ZXltemdscndmZ2VlcHlzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxMjI0NDYsImV4cCI6MjA4ODY5ODQ0Nn0.DrAu9xietiI1faei-tKOG8-Uh0QX8ZoHPCb5GT5iORY"
         },
         body: JSON.stringify({
-          message: `Shift Submitted Successfully\nStaff: ${staffName}\nDate: ${shiftDateOnly}\nTotal expected: ₹${expectedCash}\nTotal counted: ₹${countedCash}`
+          message: `⛽ SHIFT SUBMITTED\n\n👤 Staff: ${staffName}\n\n📅 Date: ${formattedDate}\n\n⛽ Petrol Sold: ${Math.max(0, petrolLitres).toFixed(2)} L\n⛽ Diesel Sold: ${Math.max(0, dieselLitres).toFixed(2)} L\n\n💰 Expected Cash: ₹${expectedCash.toFixed(2)}\n💵 Collected Cash: ₹${countedCash.toFixed(2)}\n📊 Difference: ₹${difference.toFixed(2)}\n\n✅ Approve Shift:\n${approvalLink}`
         })
       });
       console.log('After WhatsApp call, status:', waRes.status);
