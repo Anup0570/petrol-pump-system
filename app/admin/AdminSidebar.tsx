@@ -22,14 +22,14 @@ export function AdminSidebar({ adminName }: { adminName: string }) {
   return (
     <>
       {/* Mobile Hamburger Header */}
-      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-slate-200 z-30 flex items-center justify-between px-4" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white/90 backdrop-blur-md border-b border-slate-200/60 z-30 flex items-center justify-between px-4 shadow-sm">
         <div className="flex items-center gap-3">
-          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'linear-gradient(135deg, #2563eb, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <i className="fa-solid fa-gas-pump text-white" style={{ fontSize: '14px' }}></i>
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-500/20">
+            <i className="fa-solid fa-gas-pump text-white text-[14px]"></i>
           </div>
-          <div className="font-bold text-slate-800 text-sm">Sai Priya Fuels</div>
+          <div className="font-bold text-slate-800 text-sm tracking-tight">Sai Priya Fuels</div>
         </div>
-        <button onClick={() => setIsOpen(true)} className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+        <button onClick={() => setIsOpen(true)} className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors">
           <i className="fa-solid fa-bars text-xl"></i>
         </button>
       </div>
@@ -44,40 +44,37 @@ export function AdminSidebar({ adminName }: { adminName: string }) {
 
       {/* Sidebar */}
       <aside 
-        className={`fixed top-0 left-0 z-50 h-[100vh] w-[240px] bg-white border-r border-slate-200 flex flex-col transition-transform duration-300 ease-in-out md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
-        style={{ boxShadow: '1px 0 10px rgba(0,0,0,0.03)' }}
+        className={`fixed top-0 left-0 z-50 h-[100vh] w-[260px] bg-white/95 backdrop-blur-xl border-r border-slate-200/60 flex flex-col transition-transform duration-300 ease-in-out md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'} shadow-[2px_0_24px_rgba(15,23,42,0.04)]`}
       >
         {/* Logo Section */}
-        <div style={{ padding: '24px 20px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div className="flex items-center gap-3">
-            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #2563eb, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(37,99,235,0.2)' }}>
-              <i className="fa-solid fa-gas-pump text-white" style={{ fontSize: '16px' }}></i>
+        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+              <i className="fa-solid fa-gas-pump text-white text-base"></i>
             </div>
             <div>
-              <div className="font-bold text-slate-800 text-sm">Sai Priya Fuels</div>
-              <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 500 }}>Admin Panel</div>
+              <div className="font-extrabold text-slate-900 text-[15px] tracking-tight">Sai Priya Fuels</div>
+              <div className="text-[11px] text-slate-500 font-semibold tracking-wide uppercase mt-0.5">Admin Panel</div>
             </div>
           </div>
-          <button className="md:hidden p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg" onClick={() => setIsOpen(false)}>
+          <button className="md:hidden p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors" onClick={() => setIsOpen(false)}>
             <i className="fa-solid fa-xmark text-lg"></i>
           </button>
         </div>
 
       {/* Nav */}
-      <nav style={{ padding: '16px 12px', flex: 1 }}>
+      <nav className="p-4 flex-1 overflow-y-auto space-y-1">
         {NAV_ITEMS.map(item => {
           const active = pathname === item.href
           return (
-            <Link key={item.href} href={item.href} onClick={() => setIsOpen(false)} style={{
-              display: 'flex', alignItems: 'center', gap: '10px',
-              padding: '10px 12px', borderRadius: '10px', marginBottom: '4px',
-              textDecoration: 'none', fontSize: '14px', fontWeight: 600,
-              background: active ? '#eff6ff' : 'transparent',
-              color: active ? '#2563eb' : '#64748b',
-              borderLeft: active ? '3px solid #2563eb' : '3px solid transparent',
-              transition: 'all 0.15s'
-            }}>
-              <i className={`fa-solid ${item.icon} w-4`}></i>
+            <Link key={item.href} href={item.href} onClick={() => setIsOpen(false)} 
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-semibold transition-all duration-200 ${
+                active 
+                  ? 'bg-blue-50 text-blue-700 shadow-sm shadow-blue-100/50' 
+                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+              }`}
+            >
+              <i className={`fa-solid ${item.icon} w-5 text-center ${active ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'}`}></i>
               {item.label}
             </Link>
           )
@@ -85,19 +82,16 @@ export function AdminSidebar({ adminName }: { adminName: string }) {
       </nav>
 
       {/* User + Logout */}
-      <div style={{ padding: '16px 12px', borderTop: '1px solid #e2e8f0' }}>
-        <div style={{ padding: '10px 12px', marginBottom: '8px' }}>
-          <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>Signed in as</div>
-          <div style={{ fontSize: '14px', color: '#0f172a', fontWeight: 700, marginTop: '2px' }}>{adminName}</div>
+      <div className="p-4 border-t border-slate-100 bg-slate-50/50">
+        <div className="px-3 pb-3">
+          <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Signed in as</div>
+          <div className="text-[14px] text-slate-800 font-bold mt-1 truncate">{adminName}</div>
         </div>
         <form action={logout}>
-          <button type="submit" style={{
-            width: '100%', padding: '12px', borderRadius: '12px',
-            background: '#fef2f2', color: '#ef4444', border: '1px solid #fecaca',
-            cursor: 'pointer', fontSize: '13px', fontWeight: 600, textAlign: 'left',
-            transition: 'all 0.2s ease', boxShadow: '0 2px 4px rgba(239,68,68,0.05)'
-          }}>
-            <i className="fa-solid fa-arrow-right-from-bracket mr-2"></i>Logout
+          <button type="submit" 
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-[13px] font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 transition-colors shadow-sm shadow-red-100/50"
+          >
+            <i className="fa-solid fa-arrow-right-from-bracket"></i> Logout
           </button>
         </form>
       </div>

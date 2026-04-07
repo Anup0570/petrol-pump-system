@@ -22,10 +22,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div className="admin-theme" style={{ display: 'flex', minHeight: '100vh', background: '#ffffff', color: '#0f172a' }}>
+    <div className="admin-theme flex min-h-screen">
       <AdminSidebar adminName={(profile as any)?.name || 'Admin'} />
-      <main className="flex-1 min-w-0 md:ml-[240px] pt-20 px-4 pb-8 md:p-7 w-full md:w-[calc(100%-240px)]">
-        {children}
+      <main className="flex-1 min-w-0 md:ml-[260px] pt-20 px-4 pb-8 md:p-8 w-full md:w-[calc(100%-260px)]">
+        <div className="max-w-7xl mx-auto">
+          {children}
+        </div>
       </main>
     </div>
   )

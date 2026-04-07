@@ -11,13 +11,13 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className={`w-full py-3 rounded-xl font-semibold text-white ${pending ? 'opacity-50 cursor-not-allowed' : ''}`}
-      style={{
-        background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
-        border: 'none'
-      }}
+      className={`btn-primary w-full py-3.5 rounded-xl text-[15px] font-bold ${pending ? 'opacity-50 cursor-not-allowed' : ''}`}
     >
-      {pending ? 'Signing in...' : 'Sign In'}
+      {pending ? (
+        <><i className="fa-solid fa-spinner fa-spin mr-2"></i> Signing in...</>
+      ) : (
+        <><i className="fa-solid fa-arrow-right-to-bracket mr-2"></i> Sign In</>
+      )}
     </button>
   )
 }
@@ -35,26 +35,18 @@ function LoginForm() {
       )}
 
       <div className="mb-4">
-        <label
-          className="block text-sm font-medium mb-2"
-          style={{ color: '#94a3b8' }}
-        >
-          Email Address
-        </label>
-
         <input
           name="email"
           type="email"
           required
-          className="w-full p-2 rounded bg-white border border-slate-300 text-slate-900"
+          className="w-full text-[15px]"
           placeholder="you@saipriyafuels.com"
         />
       </div>
 
       <div className="mb-6">
         <label
-          className="block text-sm font-medium mb-2"
-          style={{ color: '#94a3b8' }}
+          className="block text-sm font-semibold mb-2 text-slate-500 uppercase tracking-wider text-[11px]"
         >
           Password
         </label>
@@ -63,7 +55,7 @@ function LoginForm() {
           name="password"
           type="password"
           required
-          className="w-full p-2 rounded bg-white border border-slate-300 text-slate-900"
+          className="w-full text-[15px]"
           placeholder="••••••••"
         />
       </div>
@@ -75,28 +67,29 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4"
-      style={{ background: '#f8fafc' }}
-    >
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Decorative background elements */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-500/10 blur-[120px] pointer-events-none"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-500/10 blur-[120px] pointer-events-none"></div>
+
+      <div className="w-full max-w-[420px] relative z-10 animate-fade-in">
 
         {/* Logo */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-slate-800">Sai Priya Fuels</h1>
-          <p className="text-sm mt-1" style={{ color: '#64748b' }}>
+          <div className="w-16 h-16 mx-auto bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 mb-4 transform transition-transform hover:scale-105">
+            <i className="fa-solid fa-gas-pump text-white text-3xl"></i>
+          </div>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Sai Priya Fuels</h1>
+          <p className="text-slate-500 font-medium mt-2">
             Shift Management System
           </p>
         </div>
 
         {/* Card */}
-        <div
-          className="glass-panel"
-          style={{ padding: '32px', background: '#ffffff', borderRadius: '12px' }}
-        >
-          <h2 className="text-lg font-semibold mb-6 text-slate-800">Sign In</h2>
+        <div className="glass-panel p-8 sm:p-10">
+          <h2 className="text-xl font-bold mb-6 text-slate-800 text-center">Sign In to Continue</h2>
 
-          <Suspense fallback={<div className="text-slate-600 text-center">Loading...</div>}>
+          <Suspense fallback={<div className="text-slate-500 text-center py-4 flex items-center justify-center gap-2"><i className="fa-solid fa-spinner fa-spin"></i> Loading...</div>}>
             <LoginForm />
           </Suspense>
         </div>

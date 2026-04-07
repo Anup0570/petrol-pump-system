@@ -72,22 +72,22 @@ export default async function StaffPage() {
   return (
     <div className="min-h-screen" style={{ background: '#ffffff' }}>
       {/* Top Nav */}
-      <div style={{ background: '#ffffff', borderBottom: '1px solid #e2e8f0', padding: '12px 24px', position: 'sticky', top: 0, zIndex: 50, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+      <div className="bg-white/95 backdrop-blur-xl border-b border-slate-200/60 p-4 sticky top-0 z-50 shadow-[0_1px_12px_rgba(15,23,42,0.04)]">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #2563eb, #7c3aed)' }}>
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
               <i className="fa-solid fa-gas-pump text-white text-sm"></i>
             </div>
-            <span className="font-bold text-slate-800 text-lg">Sai Priya Fuels</span>
+            <span className="font-extrabold text-slate-900 text-[18px] tracking-tight">Sai Priya Fuels</span>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm" style={{ color: '#64748b' }}>
-              <i className="fa-solid fa-clipboard-user mr-1"></i>
+          <div className="flex items-center gap-4 bg-slate-50 border border-slate-100 rounded-2xl p-1.5 pr-2">
+            <span className="text-[13px] font-semibold text-slate-600 pl-2 flex items-center gap-2">
+              <i className="fa-solid fa-clipboard-user text-blue-500"></i>
               {profile?.name || user.email}
             </span>
             <form action={logout}>
-              <button type="submit" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: '#475569', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' }}>
-                <i className="fa-solid fa-arrow-right-from-bracket mr-1"></i>Logout
+              <button type="submit" className="bg-white hover:bg-red-50 border border-slate-200 hover:border-red-100 text-slate-600 hover:text-red-600 px-3 py-1.5 rounded-xl cursor-pointer text-[12px] font-bold transition-colors shadow-sm">
+                <i className="fa-solid fa-arrow-right-from-bracket"></i>
               </button>
             </form>
           </div>
