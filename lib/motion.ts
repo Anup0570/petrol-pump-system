@@ -1,4 +1,4 @@
-import { Variants } from "framer-motion";
+import { Variants, TargetAndTransition, Variant } from "framer-motion";
 
 // Custom easing for world-class feel
 export const smoothEase = [0.16, 1, 0.3, 1];
@@ -46,7 +46,7 @@ export const slideInRight: Variants = {
     opacity: 1,
     x: 0,
     transition: {
-      type: "tween",
+      type: "tween" as const,
       ease: smoothEase,
       duration: 0.6,
     },
@@ -56,10 +56,10 @@ export const slideInRight: Variants = {
 // Fluid fill effect specifically tailored for Tank capacities
 export const liquidFillVariants = {
   hidden: { height: "0%" },
-  show: (custom: number) => ({
+  show: (custom: number): Variant => ({
     height: `${custom}%`,
     transition: {
-      type: "spring",
+      type: "spring" as const,
       stiffness: 40,
       damping: 10,
       delay: 0.2, // letting dashboard render first
@@ -67,17 +67,17 @@ export const liquidFillVariants = {
   }),
 };
 
-export const magneticHover = {
+export const magneticHover: TargetAndTransition = {
   scale: 1.02,
   y: -2,
   transition: {
-    type: "spring",
+    type: "spring" as const,
     stiffness: 400,
     damping: 20,
   },
 };
 
-export const ambientPulse = {
+export const ambientPulse: Variants = {
   animate: {
     scale: [1, 1.05, 1],
     opacity: [0.5, 0.8, 0.5],
@@ -89,7 +89,7 @@ export const ambientPulse = {
   },
 };
 
-export const floatMotion = {
+export const floatMotion: Variants = {
   animate: {
     y: [0, -12, 0],
     rotate: [0, 2, 0],
