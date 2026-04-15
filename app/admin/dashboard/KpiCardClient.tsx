@@ -1,15 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
+import { magneticHover } from '@/lib/motion'
 
 export default function KpiCardClient({ kpi }: { kpi: any }) {
   const [val, setVal] = useState(0)
 
-  // Extract number from string, animate it
+  // Fluid native requestAnimationFrame counting
   useEffect(() => {
-    // If value is a string like "₹1,234" or "100.5 L"
-    const isCurrency = kpi.value.includes('₹')
-    const isLiters = kpi.value.includes('L')
     const rawMatch = kpi.value.replace(/[^0-9.]/g, '')
     const targetValue = parseFloat(rawMatch) || 0
 
@@ -18,28 +17,26 @@ export default function KpiCardClient({ kpi }: { kpi: any }) {
       return
     }
 
-    const duration = 1500 // ms
-    const frameRate = 1000 / 60
-    const totalFrames = Math.round(duration / frameRate)
-    let frame = 0
+    let startTime: number
+    const duration = 1800 // Luxurious 1.8s count up
 
-    const counter = setInterval(() => {
-      frame++
-      const progress = easeOutExpo(frame / totalFrames)
-      setVal(progress * targetValue)
+    const animateCount = (timestamp: number) => {
+      if (!startTime) startTime = timestamp
+      const progress = Math.min((timestamp - startTime) / duration, 1)
+      
+      // Custom easeOutQuart curve 1 - (1 - x)^4
+      const easeProgress = 1 - Math.pow(1 - progress, 4)
+      setVal(easeProgress * targetValue)
 
-      if (frame >= totalFrames) {
-        clearInterval(counter)
+      if (progress < 1) {
+        window.requestAnimationFrame(animateCount)
+      } else {
         setVal(targetValue)
       }
-    }, frameRate)
+    }
 
-    return () => clearInterval(counter)
+    window.requestAnimationFrame(animateCount)
   }, [kpi.value])
-
-  const easeOutExpo = (x: number): number => {
-    return x === 1 ? 1 : 1 - Math.pow(2, -10 * x)
-  }
 
   // Format the visual output
   const formatValue = (number: number) => {
@@ -51,23 +48,40 @@ export default function KpiCardClient({ kpi }: { kpi: any }) {
     return String(Math.floor(number))
   }
 
+  // Extract base color for glow effects
+  const hexColor = kpi.color
+
   return (
-    <div className="glass-panel flex items-start justify-between p-5 transform transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_0_20px_rgba(59,130,246,0.3)] cursor-default group relative overflow-hidden">
+    <motion.div 
+      willChange="transform"
+      whileHover={magneticHover}
+      className="glass-panel flex items-start justify-between transform transition-shadow duration-300 group relative overflow-hidden cursor-pointer"
+      style={{
+        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.04)"
+      }}
+    >
       {/* Background glowing orb */}
       <div 
-        className="absolute -right-8 -bottom-8 w-24 h-24 rounded-full opacity-10 blur-xl transition-all duration-500 group-hover:opacity-30 group-hover:scale-150"
-        style={{ background: kpi.color }}
+        className="absolute -right-12 -bottom-12 w-32 h-32 rounded-full opacity-[0.08] blur-2xl transition-all duration-700 ease-out group-hover:opacity-[0.25] group-hover:scale-150"
+        style={{ background: hexColor }}
       ></div>
+      
+      {/* Top reflection line */}
+      <div className="absolute top-0 left-0 right-0 h-px transition-opacity duration-500 opacity-0 group-hover:opacity-100"
+           style={{ background: `linear-gradient(90deg, transparent, ${hexColor}80, transparent)` }}></div>
+
       <div className="relative z-10">
-        <div className="text-[13px] text-slate-400 font-semibold mb-2">{kpi.label}</div>
-        <div className="text-2xl font-bold text-white tracking-tight">{formatValue(val)}</div>
+        <div className="text-[12px] text-zinc-400 font-bold mb-1.5 uppercase tracking-widest">{kpi.label}</div>
+        <div className="text-3xl font-extrabold text-zinc-50 tracking-tight">{formatValue(val)}</div>
       </div>
+      
+      {/* Icon block */}
       <div 
-        className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm relative z-10 transition-transform group-hover:scale-110"
-        style={{ background: kpi.bg }}
+        className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border border-white/5 relative z-10 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12"
+        style={{ background: 'rgba(255,255,255,0.03)' }}
       >
-        <i className={`fa-solid ${kpi.icon} text-xl`} style={{ color: kpi.color }}></i>
+        <i className={`fa-solid ${kpi.icon} text-xl`} style={{ color: hexColor, filter: `drop-shadow(0 0 8px ${hexColor}80)` }}></i>
       </div>
-    </div>
+    </motion.div>
   )
 }
