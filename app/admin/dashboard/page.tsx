@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { format } from 'date-fns'
 import DashboardActions from './DashboardActions'
 import DeleteShiftButton from './DeleteShiftButton'
+import KpiCardClient from './KpiCardClient'
+import TankCardClient from './TankCardClient'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -55,8 +57,8 @@ export default async function DashboardPage() {
     <div>
       <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Owner Dashboard</h1>
-          <p className="text-sm mt-1" style={{ color: '#64748b' }}>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Owner Dashboard</h1>
+          <p className="text-sm mt-1 text-slate-400">
             {format(new Date(), "EEEE, d MMMM yyyy")} — Live inventory and shift reports
           </p>
         </div>
@@ -66,13 +68,13 @@ export default async function DashboardPage() {
       <div className="hidden md:block">
         {/* KPI Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {kpis.map(kpi => <KpiCard key={kpi.label} kpi={kpi} />)}
+          {kpis.map(kpi => <KpiCardClient key={kpi.label} kpi={kpi} />)}
         </div>
 
         {/* Tank Inventory */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-          <TankCard label="Petrol Tank" fuelType="petrol" current={petrolTank.current_stock} capacity={petrolTank.capacity} />
-          <TankCard label="Diesel Tank" fuelType="diesel" current={dieselTank.current_stock} capacity={dieselTank.capacity} />
+          <TankCardClient label="Petrol Tank" fuelType="petrol" current={petrolTank.current_stock} capacity={petrolTank.capacity} />
+          <TankCardClient label="Diesel Tank" fuelType="diesel" current={dieselTank.current_stock} capacity={dieselTank.capacity} />
         </div>
 
         {/* Actions Row */}
@@ -83,11 +85,11 @@ export default async function DashboardPage() {
         {/* Recent Shifts Table */}
         <div className="glass-panel p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="font-bold text-slate-800 flex items-center gap-2 text-lg">
+            <h3 className="font-bold text-slate-200 flex items-center gap-2 text-lg">
               <i className="fa-solid fa-table-list text-blue-500"></i>
               Recent Shifts
             </h3>
-            <a href="/admin/entries" className="text-[14px] text-blue-600 font-semibold hover:text-blue-700 hover:underline transition-colors">
+            <a href="/admin/entries" className="text-[14px] text-blue-500 font-semibold hover:text-blue-400 hover:underline transition-colors">
               View all <i className="fa-solid fa-arrow-right ml-1"></i>
             </a>
           </div>
@@ -100,12 +102,12 @@ export default async function DashboardPage() {
         {/* Section 1 - Key Metrics */}
         <section>
           <div className="flex items-center justify-between mb-3 px-1">
-            <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Key Metrics</h2>
+            <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Key Metrics</h2>
           </div>
           <div className="flex flex-col gap-4">
             {kpis.map(kpi => (
               <div key={kpi.label} className="w-full">
-                <KpiCard kpi={kpi} />
+                <KpiCardClient kpi={kpi} />
               </div>
             ))}
           </div>
@@ -113,10 +115,10 @@ export default async function DashboardPage() {
 
         {/* Section 2 - Fuel Tank Status */}
         <section>
-          <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 px-1">Fuel Tank Status</h2>
+          <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 px-1">Fuel Tank Status</h2>
           <div className="grid grid-cols-1 gap-4">
-            <TankCard label="Petrol Tank" fuelType="petrol" current={petrolTank.current_stock} capacity={petrolTank.capacity} />
-            <TankCard label="Diesel Tank" fuelType="diesel" current={dieselTank.current_stock} capacity={dieselTank.capacity} />
+            <TankCardClient label="Petrol Tank" fuelType="petrol" current={petrolTank.current_stock} capacity={petrolTank.capacity} />
+            <TankCardClient label="Diesel Tank" fuelType="diesel" current={dieselTank.current_stock} capacity={dieselTank.capacity} />
           </div>
         </section>
 
@@ -128,8 +130,8 @@ export default async function DashboardPage() {
         {/* Section 4 - Recent Shifts */}
         <section>
           <div className="flex items-center justify-between mb-4 px-1">
-            <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Recent Shifts</h2>
-            <a href="/admin/entries" className="text-sm font-semibold text-blue-600">View all →</a>
+            <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Recent Shifts</h2>
+            <a href="/admin/entries" className="text-sm font-semibold text-blue-500">View all →</a>
           </div>
           <div className="space-y-4">
             {(recentEntries || []).length === 0 ? (
@@ -139,7 +141,7 @@ export default async function DashboardPage() {
             ))}
           </div>
           <div className="mt-6 text-center">
-            <a href="/admin/entries" className="inline-block text-sm font-semibold text-blue-600 bg-blue-50 py-3 px-6 rounded-xl w-full text-center border border-blue-100">View all shifts →</a>
+            <a href="/admin/entries" className="inline-block text-sm font-semibold text-blue-400 bg-slate-800/50 py-3 px-6 rounded-xl w-full text-center border border-slate-700/50 hover:bg-slate-800 transition-colors">View all shifts →</a>
           </div>
         </section>
       </div>
@@ -147,49 +149,32 @@ export default async function DashboardPage() {
   )
 }
 
-function KpiCard({ kpi }: { kpi: any }) {
-  return (
-    <div className="glass-panel flex items-start justify-between p-5 transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-      <div>
-        <div className="text-[13px] text-slate-500 font-semibold mb-2">{kpi.label}</div>
-        <div className="text-2xl font-bold text-slate-800 tracking-tight">{kpi.value}</div>
-      </div>
-      <div 
-        className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
-        style={{ background: kpi.bg }}
-      >
-        <i className={`fa-solid ${kpi.icon} text-xl`} style={{ color: kpi.color }}></i>
-      </div>
-    </div>
-  )
-}
-
 function RecentShiftsTable({ recentEntries }: { recentEntries: any[] }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-200/60 bg-white/50 backdrop-blur-sm">
+    <div className="overflow-x-auto rounded-xl border border-slate-700/60 bg-slate-900/50 backdrop-blur-sm">
       <table className="w-full text-[14px]">
         <thead>
-          <tr className="border-b border-slate-200 bg-slate-50/50">
+          <tr className="border-b border-slate-800 bg-slate-800/50">
             {['Date', 'Staff', 'Shift', 'Gross (₹)', 'Exp. Cash (₹)', 'Petrol (L)', 'Diesel (L)', 'Difference', 'Status', 'Action'].map((h, index) => (
-              <th key={index} className="px-4 py-3.5 text-left text-slate-600 font-semibold whitespace-nowrap">{h}</th>
+              <th key={index} className="px-4 py-3.5 text-left text-slate-400 font-semibold whitespace-nowrap">{h}</th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100">
+        <tbody className="divide-y divide-slate-800/50">
           {(recentEntries || []).length === 0 ? (
-            <tr><td colSpan={10} className="p-8 text-center text-slate-500">No shift entries yet.</td></tr>
+            <tr><td colSpan={10} className="p-8 text-center text-slate-400">No shift entries yet.</td></tr>
           ) : (recentEntries || []).map((entry: any) => {
             const diff = entry.difference || 0
             return (
               <tr key={entry.id} className="enhanced-row">
-                <td className="px-4 py-3.5 text-slate-900 font-medium whitespace-nowrap">{format(new Date(entry.created_at), 'dd MMM, hh:mm a')}</td>
-                <td className="px-4 py-3.5 text-slate-600 whitespace-nowrap">{entry.staff_name}</td>
+                <td className="px-4 py-3.5 text-slate-300 font-medium whitespace-nowrap">{format(new Date(entry.created_at), 'dd MMM, hh:mm a')}</td>
+                <td className="px-4 py-3.5 text-slate-400 whitespace-nowrap">{entry.staff_name}</td>
                 <td className="px-4 py-3.5 text-slate-500 whitespace-nowrap">{entry.shift_type}</td>
-                <td className="px-4 py-3.5 text-slate-900 font-semibold whitespace-nowrap">₹{(entry.gross_sales || 0).toLocaleString()}</td>
-                <td className="px-4 py-3.5 text-slate-900 font-semibold whitespace-nowrap">₹{(entry.expected_cash || 0).toLocaleString()}</td>
-                <td className="px-4 py-3.5 text-orange-600 font-medium whitespace-nowrap">{(entry.petrol_litres || 0).toFixed(1)}</td>
-                <td className="px-4 py-3.5 text-blue-600 font-medium whitespace-nowrap">{(entry.diesel_litres || 0).toFixed(1)}</td>
-                <td className={`px-4 py-3.5 font-bold whitespace-nowrap ${diff > 0 ? 'text-blue-600' : diff < 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                <td className="px-4 py-3.5 text-slate-300 font-semibold whitespace-nowrap">₹{(entry.gross_sales || 0).toLocaleString()}</td>
+                <td className="px-4 py-3.5 text-slate-300 font-semibold whitespace-nowrap">₹{(entry.expected_cash || 0).toLocaleString()}</td>
+                <td className="px-4 py-3.5 text-orange-500 font-medium whitespace-nowrap">{(entry.petrol_litres || 0).toFixed(1)}</td>
+                <td className="px-4 py-3.5 text-blue-500 font-medium whitespace-nowrap">{(entry.diesel_litres || 0).toFixed(1)}</td>
+                <td className={`px-4 py-3.5 font-bold whitespace-nowrap ${diff > 0 ? 'text-blue-500' : diff < 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
                   {diff >= 0 ? '+' : ''}₹{diff.toLocaleString()}
                 </td>
                 <td className="px-4 py-3.5 whitespace-nowrap">
@@ -213,67 +198,14 @@ function RecentShiftsTable({ recentEntries }: { recentEntries: any[] }) {
   )
 }
 
-function TankCard({ label, fuelType, current, capacity }: { label: string; fuelType: string; current: number; capacity: number }) {
-  const pct = Math.min(100, (current / capacity) * 100)
-  const isLow = pct < 20
-  const color = fuelType === 'petrol' ? (isLow ? '#e11d48' : '#ea580c') : (isLow ? '#e11d48' : '#2563eb')
-  const gradient = fuelType === 'petrol' 
-    ? (isLow ? 'linear-gradient(to top, #be123c, #f43f5e)' : 'linear-gradient(to top, #c2410c, #f97316)') 
-    : (isLow ? 'linear-gradient(to top, #be123c, #f43f5e)' : 'linear-gradient(to top, #1d4ed8, #3b82f6)')
-
-  return (
-    <div className="glass-panel p-6 overflow-hidden relative group">
-      {/* Decorative blurred background orb */}
-      <div 
-        className="absolute -right-8 -bottom-8 w-32 h-32 rounded-full opacity-10 blur-2xl transition-all duration-500 group-hover:opacity-20 group-hover:scale-125"
-        style={{ background: color }}
-      ></div>
-
-      <div className="flex justify-between items-center mb-6 relative z-10">
-        <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-50 border border-slate-100 shadow-sm">
-            <i className="fa-solid fa-gas-pump" style={{ color: fuelType === 'petrol' ? 'var(--petrol)' : 'var(--diesel)' }}></i>
-          </div>
-          {label}
-        </h3>
-        <span className={isLow ? 'status-pending badge' : 'status-verified badge'}>
-          {isLow ? 'Low Stock' : 'Stock OK'}
-        </span>
-      </div>
-      
-      <div className="flex gap-6 items-center relative z-10">
-        {/* Visual tank */}
-        <div className="w-[60px] h-[120px] bg-slate-100 rounded-xl border-2 border-slate-200/60 relative overflow-hidden shrink-0 shadow-inner">
-          <div 
-            className="absolute bottom-0 w-full transition-all duration-1000 ease-out"
-            style={{ height: `${pct}%`, background: gradient, boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.4)' }}
-          >
-            {/* Fluid bubbles effect */}
-            <div className="absolute top-0 left-0 right-0 h-1 bg-white/40"></div>
-          </div>
-        </div>
-        <div>
-          <div className="text-4xl font-black text-slate-800 tracking-tight">{Math.round(current).toLocaleString()} <span className="text-xl text-slate-400 font-semibold uppercase">L</span></div>
-          <div className="text-[13px] text-slate-500 font-medium mt-1">of {capacity.toLocaleString()} L capacity</div>
-          
-          <div className="mt-4 h-2 w-36 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50 shadow-inner relative">
-            <div className="h-full rounded-full transition-all duration-1000 ease-out" style={{ width: `${pct}%`, background: gradient }}></div>
-          </div>
-          <div className="text-[12px] text-slate-500 mt-2 font-bold tracking-wide">{pct.toFixed(1)}% FULL</div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 function MobileShiftCard({ entry }: { entry: any }) {
   const diff = entry.difference || 0;
   return (
     <div className="glass-panel p-5">
       <div className="flex justify-between items-start mb-4">
         <div>
-          <div className="font-bold text-slate-900 text-[15px]">{entry.staff_name}</div>
-          <div className="text-[12px] font-semibold mt-1 text-slate-500 uppercase tracking-wide">
+          <div className="font-bold text-slate-200 text-[15px]">{entry.staff_name}</div>
+          <div className="text-[12px] font-semibold mt-1 text-slate-400 uppercase tracking-wide">
             {format(new Date(entry.created_at), 'dd MMM, hh:mm a')} • {entry.shift_type}
           </div>
         </div>
@@ -283,20 +215,20 @@ function MobileShiftCard({ entry }: { entry: any }) {
       </div>
       
       <div className="grid grid-cols-2 gap-3 mb-4">
-        <div className="bg-slate-50/80 p-3 rounded-xl border border-slate-100">
-          <div className="text-[11px] font-semibold mb-1 text-slate-400 uppercase tracking-wider">Gross Sales</div>
-          <div className="font-bold text-slate-800">₹{(entry.gross_sales || 0).toLocaleString()}</div>
+        <div className="bg-slate-800/80 p-3 rounded-xl border border-slate-700/50">
+          <div className="text-[11px] font-semibold mb-1 text-slate-500 uppercase tracking-wider">Gross Sales</div>
+          <div className="font-bold text-slate-200">₹{(entry.gross_sales || 0).toLocaleString()}</div>
         </div>
-        <div className="bg-slate-50/80 p-3 rounded-xl border border-slate-100">
-          <div className="text-[11px] font-semibold mb-1 text-slate-400 uppercase tracking-wider">Exp. Cash</div>
-          <div className="font-bold text-slate-800">₹{(entry.expected_cash || 0).toLocaleString()}</div>
+        <div className="bg-slate-800/80 p-3 rounded-xl border border-slate-700/50">
+          <div className="text-[11px] font-semibold mb-1 text-slate-500 uppercase tracking-wider">Exp. Cash</div>
+          <div className="font-bold text-slate-200">₹{(entry.expected_cash || 0).toLocaleString()}</div>
         </div>
       </div>
       
-      <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+      <div className="flex items-center justify-between pt-4 border-t border-slate-700/50">
         <div>
-           <div className="text-[11px] font-semibold mb-1 text-slate-400 uppercase tracking-wider">Difference</div>
-           <div className={`font-bold text-base ${diff > 0 ? 'text-blue-600' : diff < 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+           <div className="text-[11px] font-semibold mb-1 text-slate-500 uppercase tracking-wider">Difference</div>
+           <div className={`font-bold text-base ${diff > 0 ? 'text-blue-500' : diff < 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
              {diff >= 0 ? '+' : ''}₹{diff.toLocaleString()}
            </div>
         </div>

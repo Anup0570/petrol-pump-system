@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { logout } from '@/app/login/actions'
 import type { NozzleReading, CreditItem, Denomination } from '@/lib/types'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const NOZZLES: Omit<NozzleReading, 'close' | 'volume'>[] = [
   { id: 'p1n1', label: 'Nozzle 1 (P1)', fuelType: 'petrol', open: 0 },
@@ -18,6 +19,22 @@ const DENOMINATIONS = [500, 200, 100, 50, 20, 10, 5, 2, 1] as const
 interface StaffPageClientProps {
   staffNames: string[]
   initialOpenings: Record<string, number>
+}
+
+// Framer motion variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
 }
 
 export default function StaffPageClient({ staffNames, initialOpenings }: StaffPageClientProps) {
@@ -181,25 +198,29 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
 
   if (submitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-center animate-fade-in">
-          <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="min-h-screen flex items-center justify-center p-4"
+      >
+        <div className="text-center">
+          <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl shadow-emerald-500/20"
             style={{ background: 'rgba(16,185,129,0.2)', border: '2px solid #10b981' }}>
             <i className="fa-solid fa-check text-3xl" style={{ color: '#10b981' }}></i>
           </div>
-          <h2 className="text-2xl font-bold text-slate-800 mb-2">Shift Submitted!</h2>
-          <p style={{ color: '#64748b' }}>The owner has been notified. Status: Pending Verification</p>
+          <h2 className="text-2xl font-bold text-white mb-2">Shift Submitted!</h2>
+          <p className="text-slate-400">The owner has been notified. Status: Pending Verification</p>
           <div className="glass-panel mt-6 p-6 text-left max-w-sm mx-auto">
             <div className="flex justify-between mb-2">
-              <span style={{ color: '#64748b' }}>Expected Cash</span>
-              <span className="font-bold text-slate-800">₹{expectedCash.toFixed(2)}</span>
+               <span className="text-slate-400">Expected Cash</span>
+              <span className="font-bold text-white">₹{expectedCash.toFixed(2)}</span>
             </div>
             <div className="flex justify-between mb-2">
-              <span style={{ color: '#64748b' }}>Counted Cash</span>
-              <span className="font-bold text-slate-800">₹{countedCash.toFixed(2)}</span>
+              <span className="text-slate-400">Counted Cash</span>
+              <span className="font-bold text-white">₹{countedCash.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
-              <span style={{ color: '#64748b' }}>Difference</span>
+              <span className="text-slate-400">Difference</span>
               <span className={`font-bold ${difference === 0 ? 'text-green-400' : difference > 0 ? 'text-blue-400' : 'text-red-400'}`}>
                 {difference >= 0 ? '+' : ''}₹{difference.toFixed(2)}
               </span>
@@ -207,229 +228,237 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
           </div>
           <button
             onClick={() => { setSubmitted(false); setClosings({}); setGpay(0); setCard(0); setExpenseAmt(0); setExpenseDesc(''); setCreditGiven([]); setCreditReceived([]); setDenoms(Object.fromEntries(DENOMINATIONS.map(d => [d, 0]))); }}
-            className="mt-6 px-8 py-3 rounded-xl btn-primary"
+            className="mt-6 px-8 py-3 rounded-xl btn-primary shadow-xl shadow-blue-500/20"
           >
             <i className="fa-solid fa-plus mr-2"></i>Start New Shift
           </button>
         </div>
-      </div>
+      </motion.div>
     )
   }
 
   return (
     <form onSubmit={handleSubmit}>
       {/* Config Panel */}
-      <div className="glass-panel mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-          <div className="w-full">
-            <label className="block text-xs font-semibold mb-2" style={{ color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Shift Type</label>
-            <select value={shiftType} onChange={e => setShiftType(e.target.value)} className="w-full">
-              <option>Morning Shift</option>
-              <option>Night Shift</option>
-            </select>
-          </div>
-          <div className="w-full">
-            <label className="block text-xs font-semibold mb-2" style={{ color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Staff Name</label>
-            <select required value={staffName} onChange={e => setStaffName(e.target.value)} className="w-full">
-              <option value="" disabled>Select Staff Name...</option>
-              {staffNames.map(name => (
-                <option key={name} value={name}>{name}</option>
-              ))}
-            </select>
-          </div>
-          <div className="w-full">
-            <label className="block text-xs font-semibold mb-2" style={{ color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Date & Time</label>
-            <input type="datetime-local" value={shiftDate} onChange={e => setShiftDate(e.target.value)} required className="w-full" style={{ borderColor: '#cbd5e1', color: '#0f172a' }} />
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        {/* LEFT COLUMN */}
-        <div className="space-y-6">
-          {/* Fuel Rates */}
-          <div className="glass-panel">
-            <h3 className="text-sm font-semibold flex items-center gap-2 mb-4 text-slate-800">
-              <i className="fa-solid fa-tag" style={{ color: '#fbbf24' }}></i>
-              Today's Fuel Rates (₹/L)
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-xs mb-1.5" style={{ color: '#fbbf24' }}>Petrol Rate</label>
-                <PaymentInput step="0.01" value={ratePetrol} onChange={setRatePetrol} style={{ borderColor: '#d97706' }} />
-              </div>
-              <div>
-                <label className="block text-xs mb-1.5" style={{ color: '#60a5fa' }}>Diesel Rate</label>
-                <PaymentInput step="0.01" value={rateDiesel} onChange={setRateDiesel} style={{ borderColor: '#2563eb' }} />
-              </div>
-              <div>
-                <label className="block text-xs mb-1.5" style={{ color: '#a78bfa' }}>2T Oil Rate</label>
-                <PaymentInput step="0.01" value={rateOil} onChange={setRateOil} style={{ borderColor: '#7c3aed' }} />
-              </div>
+      <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
+        <motion.div variants={itemVariants} className="glass-panel mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+            <div className="w-full">
+              <label className="block text-xs font-semibold mb-2 text-slate-400 uppercase tracking-wider">Shift Type</label>
+              <select value={shiftType} onChange={e => setShiftType(e.target.value)} className="w-full">
+                <option>Morning Shift</option>
+                <option>Night Shift</option>
+              </select>
+            </div>
+            <div className="w-full">
+              <label className="block text-xs font-semibold mb-2 text-slate-400 uppercase tracking-wider">Staff Name</label>
+              <select required value={staffName} onChange={e => setStaffName(e.target.value)} className="w-full">
+                <option value="" disabled>Select Staff Name...</option>
+                {staffNames.map(name => (
+                  <option key={name} value={name}>{name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="w-full">
+              <label className="block text-xs font-semibold mb-2 text-slate-400 uppercase tracking-wider">Date & Time</label>
+              <input type="datetime-local" value={shiftDate} onChange={e => setShiftDate(e.target.value)} required className="w-full" style={{ borderColor: 'rgba(255,255,255,0.1)', color: 'white' }} />
             </div>
           </div>
+        </motion.div>
 
-          {/* Pump 1 */}
-          <PumpTable pump="1" nozzles={nozzleCalcs.slice(0, 2)} closings={closings} setClosings={setClosings} />
-          {/* Pump 2 */}
-          <PumpTable pump="2" nozzles={nozzleCalcs.slice(2, 4)} closings={closings} setClosings={setClosings} />
-          {/* 2T Oil */}
-          <div className="glass-panel">
-            <h3 className="text-sm font-semibold flex items-center gap-2 pump-header-gradient" style={{ borderLeftColor: '#a78bfa', color: '#1e293b' }}>
-              <i className="fa-solid fa-oil-can" style={{ color: '#a78bfa' }}></i>2T Oil Dispenser
-            </h3>
-            <div className="overflow-x-auto">
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                    {['Nozzle', 'Fuel', 'Opening', 'Closing', 'Volume'].map(h => (
-                      <th key={h} style={{ padding: '8px 12px', textAlign: 'left', color: '#475569', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  <NozzleRow nozzle={nozzleCalcs[4]} closings={closings} setClosings={setClosings} />
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        {/* RIGHT COLUMN */}
-        <div className="space-y-6">
-          {/* Morning Test Toggle */}
-          <div className="glass-panel" style={{ padding: '16px 24px' }}>
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-semibold flex items-center gap-2 text-slate-800">
-                  <i className="fa-solid fa-vial" style={{ color: '#fbbf24' }}></i>Morning Test Performed?
-                </h3>
-                <p className="text-xs mt-1" style={{ color: '#64748b' }}>Deducts 10L Petrol + 10L Diesel from sales</p>
-              </div>
-              <label className="toggle-switch">
-                <input type="checkbox" checked={testPerformed} onChange={e => setTestPerformed(e.target.checked)} />
-                <span className="toggle-slider"></span>
-              </label>
-            </div>
-          </div>
-
-          {/* Digital Payments */}
-          <div className="glass-panel">
-            <h3 className="text-sm font-semibold mb-4 flex items-center gap-2 text-slate-800">
-              <i className="fa-solid fa-money-bill-transfer" style={{ color: '#60a5fa' }}></i>Digital Payments & Expenses
-            </h3>
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                <label className="text-sm sm:w-36 shrink-0" style={{ color: '#64748b' }}>
-                  <i className="fa-brands fa-google-pay mr-1"></i>GPay / UPI (₹)
-                </label>
-                <PaymentInput value={gpay} onChange={setGpay} />
-              </div>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                <label className="text-sm sm:w-36 shrink-0" style={{ color: '#94a3b8' }}>
-                  <i className="fa-regular fa-credit-card mr-1"></i>Card Swipes (₹)
-                </label>
-                <PaymentInput value={card} onChange={setCard} />
-              </div>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                <label className="text-sm sm:w-36 shrink-0" style={{ color: '#94a3b8' }}>
-                  <i className="fa-solid fa-receipt mr-1"></i>Other Expenses
-                </label>
-                <PaymentInput value={expenseAmt} onChange={setExpenseAmt} />
-              </div>
-              {expenseAmt > 0 && (
-                <input type="text" value={expenseDesc} onChange={e => setExpenseDesc(e.target.value)}
-                  placeholder="Expense description (e.g. Tea/Coffee)" />
-              )}
-            </div>
-          </div>
-
-          {/* Credit Management */}
-          <div className="glass-panel">
-            <h3 className="text-sm font-semibold mb-4 flex items-center gap-2 text-slate-800">
-              <i className="fa-solid fa-book-open" style={{ color: '#f87171' }}></i>Credit Management
-            </h3>
-            <CreditSection type="given" label="Credit Given"
-              items={creditGiven} setItems={setCreditGiven}
-              nameVal={cgName} setName={setCgName} amtVal={cgAmt} setAmt={setCgAmt} />
-            <div className="mt-4">
-              <CreditSection type="received" label="Credit Received"
-                items={creditReceived} setItems={setCreditReceived}
-                nameVal={crName} setName={setCrName} amtVal={crAmt} setAmt={setCrAmt} />
-            </div>
-          </div>
-
-          {/* Cash Denominations */}
-          <div className="glass-panel">
-            <h3 className="text-sm font-semibold mb-4 flex items-center gap-2 text-slate-800">
-              <i className="fa-solid fa-money-bill-wave" style={{ color: '#10b981' }}></i>Count Cash in Drawer
-            </h3>
-            <div className="space-y-2">
-              {DENOMINATIONS.map(d => (
-                <div key={d} className="flex items-center gap-3">
-                  <span className="text-sm w-16 shrink-0" style={{ color: '#64748b' }}>₹{d} ×</span>
-                  <PaymentInput inputMode="numeric" value={denoms[d] || 0}
-                    onChange={val => setDenoms(prev => ({ ...prev, [d]: val }))} />
-                  <span className="text-sm w-20 text-right font-medium shrink-0" style={{ color: '#64748b' }}>
-                    ₹{((denoms[d] || 0) * d).toLocaleString()}
-                  </span>
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          {/* LEFT COLUMN */}
+          <div className="space-y-6">
+            {/* Fuel Rates */}
+            <motion.div variants={itemVariants} className="glass-panel">
+              <h3 className="text-sm font-semibold flex items-center gap-2 mb-4 text-white">
+                <i className="fa-solid fa-tag" style={{ color: '#fbbf24' }}></i>
+                Today's Fuel Rates (₹/L)
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs mb-1.5" style={{ color: '#fbbf24' }}>Petrol Rate</label>
+                  <PaymentInput step="0.01" value={ratePetrol} onChange={setRatePetrol} style={{ borderColor: '#d97706' }} />
                 </div>
-              ))}
-            </div>
-            <div className="mt-4 pt-4 flex justify-between items-center" style={{ borderTop: '1px solid #e2e8f0' }}>
-              <span className="font-bold text-slate-800">Total Cash Counted</span>
-              <span className="text-xl font-bold" style={{ color: '#10b981' }}>₹{countedCash.toLocaleString()}</span>
-            </div>
+                <div>
+                  <label className="block text-xs mb-1.5" style={{ color: '#60a5fa' }}>Diesel Rate</label>
+                  <PaymentInput step="0.01" value={rateDiesel} onChange={setRateDiesel} style={{ borderColor: '#2563eb' }} />
+                </div>
+                <div>
+                  <label className="block text-xs mb-1.5" style={{ color: '#a78bfa' }}>2T Oil Rate</label>
+                  <PaymentInput step="0.01" value={rateOil} onChange={setRateOil} style={{ borderColor: '#7c3aed' }} />
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Pump 1 */}
+            <motion.div variants={itemVariants}>
+              <PumpTable pump="1" nozzles={nozzleCalcs.slice(0, 2)} closings={closings} setClosings={setClosings} />
+            </motion.div>
+            {/* Pump 2 */}
+            <motion.div variants={itemVariants}>
+              <PumpTable pump="2" nozzles={nozzleCalcs.slice(2, 4)} closings={closings} setClosings={setClosings} />
+            </motion.div>
+            {/* 2T Oil */}
+            <motion.div variants={itemVariants} className="glass-panel">
+              <h3 className="text-sm font-semibold flex items-center gap-2 pump-header-gradient text-white" style={{ borderLeftColor: '#a78bfa' }}>
+                <i className="fa-solid fa-oil-can" style={{ color: '#a78bfa' }}></i>2T Oil Dispenser
+              </h3>
+              <div className="overflow-x-auto">
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                      {['Nozzle', 'Fuel', 'Opening', 'Closing', 'Volume'].map(h => (
+                        <th key={h} className="text-slate-400 font-medium uppercase tracking-wider text-[11px]" style={{ padding: '8px 12px', textAlign: 'left', whiteSpace: 'nowrap' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <NozzleRow nozzle={nozzleCalcs[4]} closings={closings} setClosings={setClosings} />
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
           </div>
 
-          {/* Reconciliation */}
-          <div className="glass-panel">
-            <h2 className="text-lg font-bold mb-4 text-slate-800">Shift Reconciliation</h2>
-            <div className="space-y-2 text-sm">
-              <ReconcRow label="Fuel Sales Value" value={`₹${grossSales.toFixed(2)}`} />
-              {testPerformed && <ReconcRow label="Test Volume Deduction" value={`- ₹${testCost.toFixed(2)}`} valueColor="#ef4444" />}
-              <ReconcRow label="Digital Payments (UPI + Card)" value={`- ₹${digitalTotal.toFixed(2)}`} valueColor="#ef4444" />
-              <ReconcRow label="Credit Given" value={`- ₹${totalCreditGiven.toFixed(2)}`} valueColor="#ef4444" />
-              <ReconcRow label="Expenses" value={`- ₹${expenseAmt.toFixed(2)}`} valueColor="#ef4444" />
-              <ReconcRow label="Credit Received" value={`+ ₹${totalCreditReceived.toFixed(2)}`} valueColor="#10b981" />
-            </div>
-            <div className="h-px my-4" style={{ background: '#e2e8f0' }}></div>
-            <div className="mb-3" style={{ background: '#f8fafc', border: '1px solid #bfdbfe', borderRadius: '12px', padding: '16px' }}>
-              <div className="flex justify-between">
-                <span className="font-semibold" style={{ color: '#64748b' }}>Expected Cash in Drawer</span>
-                <span className="text-lg font-bold text-slate-800">₹{expectedCash.toFixed(2)}</span>
+          {/* RIGHT COLUMN */}
+          <div className="space-y-6">
+            {/* Morning Test Toggle */}
+            <motion.div variants={itemVariants} className="glass-panel" style={{ padding: '16px 24px' }}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold flex items-center gap-2 text-white">
+                    <i className="fa-solid fa-vial" style={{ color: '#fbbf24' }}></i>Morning Test Performed?
+                  </h3>
+                  <p className="text-xs mt-1 text-slate-400">Deducts 10L Petrol + 10L Diesel from sales</p>
+                </div>
+                <label className="toggle-switch">
+                  <input type="checkbox" checked={testPerformed} onChange={e => setTestPerformed(e.target.checked)} />
+                  <span className="toggle-slider"></span>
+                </label>
               </div>
-            </div>
-            <div className="mb-3" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px' }}>
-              <div className="flex justify-between">
-                <span className="font-semibold" style={{ color: '#64748b' }}>Total Cash Counted</span>
-                <span className="text-lg font-bold text-slate-800">₹{countedCash.toFixed(2)}</span>
-              </div>
-            </div>
-            <div className={`p-3 rounded-lg mb-4 ${difference === 0 ? 'diff-balanced' : difference > 0 ? 'diff-excess' : 'diff-shortage'}`}>
-              <div className="flex justify-between text-sm font-semibold">
-                <span>Difference (Counted - Expected)</span>
-                <span>{difference >= 0 ? '+' : ''}₹{difference.toFixed(2)} ({difference === 0 ? 'Balanced' : difference > 0 ? 'Cash Excess' : 'Cash Shortage'})</span>
-              </div>
-            </div>
-            {/* Final Cash Box */}
-            <div className="rounded-xl p-5 mb-6" style={{ background: 'linear-gradient(135deg, rgba(37,99,235,0.05), rgba(124,58,237,0.05))', border: '1px solid rgba(37,99,235,0.2)' }}>
-              <p className="text-sm font-medium mb-1" style={{ color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cash to Give to Owner / Next Shift</p>
-              <p className="text-4xl font-bold text-slate-800">₹{countedCash.toFixed(2)}</p>
-            </div>
+            </motion.div>
 
-            <button type="submit" disabled={submitting}
-              className={`w-full py-4 text-base transition-all ${submitting ? '' : 'btn-primary'}`}
-              style={submitting ? { background: '#1e293b', color: '#64748b', border: '1px solid #334155', borderRadius: '12px', cursor: 'not-allowed' } : {}}>
-              {submitting ? (
-                <><i className="fa-solid fa-spinner fa-spin mr-2"></i>Submitting...</>
-              ) : (
-                <><i className="fa-solid fa-check-double mr-2"></i>Submit Shift & Complete Handover</>
-              )}
-            </button>
+            {/* Digital Payments */}
+            <motion.div variants={itemVariants} className="glass-panel">
+              <h3 className="text-sm font-semibold mb-4 flex items-center gap-2 text-white">
+                <i className="fa-solid fa-money-bill-transfer" style={{ color: '#60a5fa' }}></i>Digital Payments & Expenses
+              </h3>
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                  <label className="text-sm sm:w-36 shrink-0 text-slate-400">
+                    <i className="fa-brands fa-google-pay mr-1"></i>GPay / UPI (₹)
+                  </label>
+                  <PaymentInput value={gpay} onChange={setGpay} />
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                  <label className="text-sm sm:w-36 shrink-0 text-slate-400">
+                    <i className="fa-regular fa-credit-card mr-1"></i>Card Swipes (₹)
+                  </label>
+                  <PaymentInput value={card} onChange={setCard} />
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                  <label className="text-sm sm:w-36 shrink-0 text-slate-400">
+                    <i className="fa-solid fa-receipt mr-1"></i>Other Expenses
+                  </label>
+                  <PaymentInput value={expenseAmt} onChange={setExpenseAmt} />
+                </div>
+                {expenseAmt > 0 && (
+                  <input type="text" value={expenseDesc} onChange={e => setExpenseDesc(e.target.value)}
+                    placeholder="Expense description (e.g. Tea/Coffee)" />
+                )}
+              </div>
+            </motion.div>
+
+            {/* Credit Management */}
+            <motion.div variants={itemVariants} className="glass-panel">
+              <h3 className="text-sm font-semibold mb-4 flex items-center gap-2 text-white">
+                <i className="fa-solid fa-book-open" style={{ color: '#f87171' }}></i>Credit Management
+              </h3>
+              <CreditSection type="given" label="Credit Given"
+                items={creditGiven} setItems={setCreditGiven}
+                nameVal={cgName} setName={setCgName} amtVal={cgAmt} setAmt={setCgAmt} />
+              <div className="mt-4">
+                <CreditSection type="received" label="Credit Received"
+                  items={creditReceived} setItems={setCreditReceived}
+                  nameVal={crName} setName={setCrName} amtVal={crAmt} setAmt={setCrAmt} />
+              </div>
+            </motion.div>
+
+            {/* Cash Denominations */}
+            <motion.div variants={itemVariants} className="glass-panel">
+              <h3 className="text-sm font-semibold mb-4 flex items-center gap-2 text-white">
+                <i className="fa-solid fa-money-bill-wave" style={{ color: '#10b981' }}></i>Count Cash in Drawer
+              </h3>
+              <div className="space-y-2">
+                {DENOMINATIONS.map(d => (
+                  <div key={d} className="flex items-center gap-3">
+                    <span className="text-sm w-16 shrink-0 text-slate-400">₹{d} ×</span>
+                    <PaymentInput inputMode="numeric" value={denoms[d] || 0}
+                      onChange={val => setDenoms(prev => ({ ...prev, [d]: val }))} />
+                    <span className="text-sm w-20 text-right font-medium shrink-0 text-slate-400">
+                      ₹{((denoms[d] || 0) * d).toLocaleString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 pt-4 flex justify-between items-center" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                <span className="font-bold text-white">Total Cash Counted</span>
+                <span className="text-xl font-bold" style={{ color: '#10b981' }}>₹{countedCash.toLocaleString()}</span>
+              </div>
+            </motion.div>
+
+            {/* Reconciliation */}
+            <motion.div variants={itemVariants} className="glass-panel">
+              <h2 className="text-lg font-bold mb-4 text-white">Shift Reconciliation</h2>
+              <div className="space-y-2 text-sm">
+                <ReconcRow label="Fuel Sales Value" value={`₹${grossSales.toFixed(2)}`} />
+                {testPerformed && <ReconcRow label="Test Volume Deduction" value={`- ₹${testCost.toFixed(2)}`} valueColor="#ef4444" />}
+                <ReconcRow label="Digital Payments (UPI + Card)" value={`- ₹${digitalTotal.toFixed(2)}`} valueColor="#ef4444" />
+                <ReconcRow label="Credit Given" value={`- ₹${totalCreditGiven.toFixed(2)}`} valueColor="#ef4444" />
+                <ReconcRow label="Expenses" value={`- ₹${expenseAmt.toFixed(2)}`} valueColor="#ef4444" />
+                <ReconcRow label="Credit Received" value={`+ ₹${totalCreditReceived.toFixed(2)}`} valueColor="#10b981" />
+              </div>
+              <div className="h-px my-4" style={{ background: 'rgba(255,255,255,0.1)' }}></div>
+              <div className="mb-3" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '12px', padding: '16px' }}>
+                <div className="flex justify-between">
+                  <span className="font-semibold text-slate-400">Expected Cash in Drawer</span>
+                  <span className="text-lg font-bold text-white">₹{expectedCash.toFixed(2)}</span>
+                </div>
+              </div>
+              <div className="mb-3" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '16px' }}>
+                <div className="flex justify-between">
+                  <span className="font-semibold text-slate-400">Total Cash Counted</span>
+                  <span className="text-lg font-bold text-white">₹{countedCash.toFixed(2)}</span>
+                </div>
+              </div>
+              <div className={`p-3 rounded-lg mb-4 ${difference === 0 ? 'diff-balanced' : difference > 0 ? 'diff-excess' : 'diff-shortage'}`}>
+                <div className="flex justify-between text-sm font-semibold">
+                  <span>Difference (Counted - Expected)</span>
+                  <span>{difference >= 0 ? '+' : ''}₹{difference.toFixed(2)} ({difference === 0 ? 'Balanced' : difference > 0 ? 'Cash Excess' : 'Cash Shortage'})</span>
+                </div>
+              </div>
+              {/* Final Cash Box */}
+              <div className="rounded-xl p-5 mb-6 shadow-2xl" style={{ background: 'linear-gradient(135deg, rgba(37,99,235,0.1), rgba(124,58,237,0.1))', border: '1px solid rgba(37,99,235,0.2)' }}>
+                <p className="text-sm font-medium mb-1 text-slate-400 uppercase tracking-wider">Cash to Give to Owner / Next Shift</p>
+                <p className="text-4xl font-bold text-white">₹{countedCash.toFixed(2)}</p>
+              </div>
+
+              <motion.button type="submit" disabled={submitting}
+                whileHover={!submitting ? { scale: 1.02 } : {}}
+                whileTap={!submitting ? { scale: 0.98 } : {}}
+                className={`w-full py-4 text-base transition-all shadow-lg ${submitting ? '' : 'btn-primary'}`}
+                style={submitting ? { background: 'rgba(255,255,255,0.1)', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', cursor: 'not-allowed' } : {}}>
+                {submitting ? (
+                  <><i className="fa-solid fa-spinner fa-spin mr-2"></i>Submitting...</>
+                ) : (
+                  <><i className="fa-solid fa-check-double mr-2"></i>Submit Shift & Complete Handover</>
+                )}
+              </motion.button>
+            </motion.div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </form>
   )
 }
@@ -443,15 +472,15 @@ function PumpTable({ pump, nozzles, closings, setClosings }: {
 }) {
   return (
     <div className="glass-panel">
-      <h3 className="text-sm font-semibold flex items-center gap-2 pump-header-gradient" style={{ color: '#1e293b' }}>
-        <i className="fa-solid fa-gas-pump" style={{ color: '#2563eb' }}></i>Pump {pump}
+      <h3 className="text-sm font-semibold flex items-center gap-2 pump-header-gradient" style={{ color: 'white' }}>
+        <i className="fa-solid fa-gas-pump" style={{ color: '#3b82f6' }}></i>Pump {pump}
       </h3>
       <div className="overflow-x-auto">
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
           <thead>
-            <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               {['Nozzle', 'Fuel', 'Opening', 'Closing', 'Volume Sold'].map(h => (
-                <th key={h} style={{ padding: '8px 12px', textAlign: 'left', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', fontSize: '11px', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>{h}</th>
+                <th key={h} className="text-slate-400" style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 600, textTransform: 'uppercase', fontSize: '11px', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>{h}</th>
               ))}
             </tr>
           </thead>
@@ -474,8 +503,8 @@ function NozzleRow({ nozzle, closings, setClosings }: {
   const accentBorderColor = nozzle.fuelType === 'petrol' ? 'rgba(245, 158, 11, 0.3)' : nozzle.fuelType === 'diesel' ? 'rgba(59, 130, 246, 0.3)' : 'rgba(139, 92, 246, 0.3)'
 
   return (
-    <tr className="enhanced-row" style={{ borderBottom: '1px solid #e2e8f0', borderLeft: `2px solid ${accentBorderColor}` }}>
-      <td style={{ padding: '12px', color: '#0f172a', fontWeight: 500 }}>{nozzle.label}</td>
+    <tr className="enhanced-row" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', borderLeft: `2px solid ${accentBorderColor}` }}>
+      <td style={{ padding: '12px', color: 'white', fontWeight: 500 }}>{nozzle.label}</td>
       <td style={{ padding: '12px' }}><span className={`badge ${badgeClass}`}>{nozzle.fuelType.charAt(0).toUpperCase() + nozzle.fuelType.slice(1)}</span></td>
       <td style={{ padding: '12px' }}><input type="number" value={nozzle.open.toFixed(2)} readOnly style={{ width: '90px' }} /></td>
       <td style={{ padding: '12px' }}>
@@ -483,7 +512,13 @@ function NozzleRow({ nozzle, closings, setClosings }: {
           onChange={e => setClosings(prev => ({ ...prev, [nozzle.id]: e.target.value }))}
           placeholder="0.00" style={{ width: '100px' }} />
       </td>
-      <td style={{ padding: '12px', fontWeight: 700, color: volColor }}>{nozzle.volume.toFixed(2)} L</td>
+      <td style={{ padding: '12px', fontWeight: 700, color: volColor }}>
+        <motion.div
+           initial={{ opacity: 0, scale: 0.8 }}
+           animate={{ opacity: 1, scale: 1 }}
+           key={nozzle.volume}
+        >{nozzle.volume.toFixed(2)} L</motion.div>
+      </td>
     </tr>
   )
 }
@@ -502,12 +537,12 @@ function CreditSection({ type, label, items, setItems, nameVal, setName, amtVal,
   }
 
   const cardClass = type === 'given' ? 'credit-given-card' : 'credit-received-card';
-  const color = type === 'given' ? '#ef4444' : '#10b981';
+  const color = type === 'given' ? '#f87171' : '#34d399';
 
   return (
     <div className={cardClass}>
       <h4 className="text-sm font-bold mb-1" style={{ color }}>{label}</h4>
-      <p className="text-xs mb-4" style={{ color: '#94a3b8' }}>{type === 'given' ? '(Fuel given, cash NOT received. Deducts from expected cash.)' : '(Cash collected for past dues. Adds to expected cash.)'}</p>
+      <p className="text-xs mb-4 text-slate-400">{type === 'given' ? '(Fuel given, cash NOT received. Deducts from expected cash.)' : '(Cash collected for past dues. Adds to expected cash.)'}</p>
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <input type="text" placeholder="Name/Vehicle" value={nameVal} onChange={e => setName(e.target.value)}
           className="w-full" onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), add())} />
@@ -518,8 +553,8 @@ function CreditSection({ type, label, items, setItems, nameVal, setName, amtVal,
       </div>
       <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
         {items.map((item, i) => (
-          <li key={i} className="flex justify-between items-center py-2 text-sm enhanced-row" style={{ borderBottom: '1px dashed #cbd5e1', paddingLeft: '8px', paddingRight: '8px', borderRadius: '6px' }}>
-            <span style={{ color: '#0f172a', fontWeight: 500 }}>{item.name}</span>
+          <li key={i} className="flex justify-between items-center py-2 text-sm enhanced-row" style={{ borderBottom: '1px dashed rgba(255,255,255,0.1)', paddingLeft: '8px', paddingRight: '8px', borderRadius: '6px' }}>
+            <span style={{ color: 'white', fontWeight: 500 }}>{item.name}</span>
             <span style={{ fontWeight: 700, color }}>
               ₹{item.amt.toFixed(2)}
               <button type="button" onClick={() => setItems(prev => prev.filter((_, j) => j !== i))}
@@ -534,7 +569,7 @@ function CreditSection({ type, label, items, setItems, nameVal, setName, amtVal,
         ))}
       </ul>
       {items.length > 0 && (
-        <div className="text-right text-sm font-bold mt-3 pt-3" style={{ borderTop: '1px solid #cbd5e1', color }}>
+        <div className="text-right text-sm font-bold mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.1)', color }}>
           Total: ₹{items.reduce((s, c) => s + c.amt, 0).toFixed(2)}
         </div>
       )}
@@ -545,8 +580,8 @@ function CreditSection({ type, label, items, setItems, nameVal, setName, amtVal,
 function ReconcRow({ label, value, valueColor }: { label: string; value: string; valueColor?: string }) {
   return (
     <div className="flex justify-between py-1">
-      <span style={{ color: '#64748b' }}>{label}</span>
-      <span style={{ fontWeight: 600, color: valueColor || '#0f172a' }}>{value}</span>
+      <span className="text-slate-400">{label}</span>
+      <span style={{ fontWeight: 600, color: valueColor || 'white' }}>{value}</span>
     </div>
   )
 }
