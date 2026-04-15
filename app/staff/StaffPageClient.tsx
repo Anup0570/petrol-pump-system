@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { logout } from '@/app/login/actions'
 import type { NozzleReading, CreditItem, Denomination } from '@/lib/types'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, Variants } from 'framer-motion'
 
 const NOZZLES: Omit<NozzleReading, 'close' | 'volume'>[] = [
   { id: 'p1n1', label: 'Nozzle 1 (P1)', fuelType: 'petrol', open: 0 },
@@ -22,7 +22,7 @@ interface StaffPageClientProps {
 }
 
 // Framer motion variants
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
@@ -32,9 +32,9 @@ const containerVariants = {
   }
 }
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } }
 }
 
 export default function StaffPageClient({ staffNames, initialOpenings }: StaffPageClientProps) {
