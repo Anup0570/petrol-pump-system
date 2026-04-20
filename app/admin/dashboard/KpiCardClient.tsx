@@ -53,10 +53,10 @@ export default function KpiCardClient({ kpi }: { kpi: any }) {
 
   return (
     <motion.div 
-      willChange="transform"
       whileHover={magneticHover}
       className="glass-panel flex items-start justify-between transform transition-shadow duration-300 group relative overflow-hidden cursor-pointer"
       style={{
+        willChange: "transform",
         boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.04)"
       }}
     >

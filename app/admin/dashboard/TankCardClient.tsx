@@ -15,9 +15,9 @@ export default function TankCardClient({ label, fuelType, current, capacity }: {
 
   return (
     <motion.div 
-      willChange="transform"
       whileHover={magneticHover}
       className="glass-panel overflow-hidden relative group cursor-pointer"
+      style={{ willChange: "transform" }}
     >
       {/* Decorative blurred background orb */}
       <div 

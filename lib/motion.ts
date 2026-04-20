@@ -1,7 +1,7 @@
 import { Variants, TargetAndTransition, Variant } from "framer-motion";
 
 // Custom easing for world-class feel
-export const smoothEase = [0.16, 1, 0.3, 1];
+export const smoothEase = [0.16, 1, 0.3, 1] as const;
 
 export const pageFadeIn: Variants = {
   hidden: { opacity: 0, filter: "blur(10px)" },
@@ -53,13 +53,12 @@ export const slideInRight: Variants = {
   },
 };
 
-// Fluid fill effect specifically tailored for Tank capacities
-export const liquidFillVariants = {
+export const liquidFillVariants: Variants = {
   hidden: { height: "0%" },
-  show: (custom: number): Variant => ({
+  show: (custom: number): TargetAndTransition => ({
     height: `${custom}%`,
     transition: {
-      type: "spring" as const,
+      type: "spring",
       stiffness: 40,
       damping: 10,
       delay: 0.2, // letting dashboard render first
