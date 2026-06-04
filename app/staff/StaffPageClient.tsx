@@ -27,9 +27,9 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
   // Form state
   const [staffName, setStaffName] = useState('')
   const [shiftType, setShiftType] = useState('Morning Shift')
-  const [ratePetrol, setRatePetrol] = useState(101.53)
-  const [rateDiesel, setRateDiesel] = useState(93.16)
-  const [rateOil, setRateOil] = useState(400.00)
+  const [ratePetrol, setRatePetrol] = useState(0)
+  const [rateDiesel, setRateDiesel] = useState(0)
+  const [rateOil, setRateOil] = useState(0)
   const [closings, setClosings] = useState<Record<string, string>>({})
   const [testPerformed, setTestPerformed] = useState(true)
   const [gpay, setGpay] = useState(0)
@@ -87,6 +87,9 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
     e.preventDefault()
     // Validate all closings filled
     if (!staffName) { alert('Please select your Staff Name.'); return }
+    if (ratePetrol <= 0) { alert('Validation Error: Petrol rate must be greater than 0.'); return }
+    if (rateDiesel <= 0) { alert('Validation Error: Diesel rate must be greater than 0.'); return }
+    if (rateOil <= 0) { alert('Validation Error: 2T Oil rate must be greater than 0.'); return }
     for (const n of NOZZLES) {
       if (!closings[n.id]) { alert(`Please enter closing reading for ${n.label}`); return }
       const open = openings[n.id] ?? 0
@@ -217,7 +220,7 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
           <motion.button
             whileHover={magneticHover}
             whileTap={{ scale: 0.95 }}
-            onClick={() => { setSubmitted(false); setClosings({}); setGpay(0); setCard(0); setExpenseAmt(0); setExpenseDesc(''); setCreditGiven([]); setCreditReceived([]); setDenoms(Object.fromEntries(DENOMINATIONS.map(d => [d, 0]))); setSubmitting(false); }}
+            onClick={() => { setSubmitted(false); setClosings({}); setGpay(0); setCard(0); setExpenseAmt(0); setExpenseDesc(''); setCreditGiven([]); setCreditReceived([]); setDenoms(Object.fromEntries(DENOMINATIONS.map(d => [d, 0]))); setSubmitting(false); setRatePetrol(0); setRateDiesel(0); setRateOil(0); }}
             className="mt-8 px-8 py-4 rounded-xl btn-primary shadow-[0_0_20px_rgba(59,130,246,0.2)] w-full uppercase tracking-widest text-sm"
           >
             <i className="fa-solid fa-rotate-right mr-2"></i> Initialize Next Shift
