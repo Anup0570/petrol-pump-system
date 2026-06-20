@@ -235,18 +235,18 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
       {/* Config Panel */}
       <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
         
-        <motion.div variants={itemVariants} className="glass-panel mb-6 border-l-2 border-l-blue-500">
+        <motion.div variants={itemVariants} className="glass-panel mb-6 border-l-2 border-l-[#ff6a00]">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
             <div className="w-full">
               <label className="block text-xs font-bold mb-2 text-zinc-500 uppercase tracking-widest">Shift Protocol</label>
-              <select value={shiftType} onChange={e => setShiftType(e.target.value)} className="w-full cursor-pointer focus:ring-1 focus:ring-blue-500/50">
+              <select value={shiftType} onChange={e => setShiftType(e.target.value)} className="w-full cursor-pointer focus:ring-1 focus:ring-[#ff6a00]/50">
                 <option>Morning Shift</option>
                 <option>Night Shift</option>
               </select>
             </div>
             <div className="w-full">
               <label className="block text-xs font-bold mb-2 text-zinc-500 uppercase tracking-widest">Operator Identity</label>
-              <select required value={staffName} onChange={e => setStaffName(e.target.value)} className="w-full cursor-pointer focus:ring-1 focus:ring-blue-500/50">
+              <select required value={staffName} onChange={e => setStaffName(e.target.value)} className="w-full cursor-pointer focus:ring-1 focus:ring-[#ff6a00]/50">
                 <option value="" disabled>Select Operator...</option>
                 {staffNames.map(name => (
                   <option key={name} value={name}>{name}</option>
@@ -324,7 +324,7 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
           <div className="space-y-6">
             
             {/* Live Calculation Display (Sticky-ish logic header) */}
-            <motion.div variants={itemVariants} className="glass-panel border-r-2 border-r-blue-500 p-6 flex flex-col justify-center shadow-[inset_0_4px_24px_rgba(0,0,0,0.5)]">
+            <motion.div variants={itemVariants} className="glass-panel border-r-2 border-r-[#ff6a00] p-6 flex flex-col justify-center shadow-[inset_0_4px_24px_rgba(0,0,0,0.5)]">
                <div className="text-[10px] font-bold text-zinc-500 tracking-widest uppercase mb-1">Live Telemetry</div>
                <div className="flex justify-between items-end">
                  <div className="text-zinc-300 font-medium">Expected Vault Balance</div>
@@ -457,7 +457,7 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
               
               <div className="h-px w-full bg-white/10 mb-6 relative z-10"></div>
               
-              <div className={`p-5 rounded-2xl mb-8 relative z-10 border transition-colors duration-500 shadow-xl ${difference === 0 ? 'bg-emerald-500/10 border-emerald-500/30' : difference > 0 ? 'bg-blue-500/10 border-blue-500/30' : 'bg-rose-500/10 border-rose-500/30'}`}>
+              <div className={`p-5 rounded-2xl mb-8 relative z-10 border transition-colors duration-500 shadow-xl ${difference === 0 ? 'bg-emerald-500/10 border-emerald-500/30' : difference > 0 ? 'bg-[#ff6a00]/10 border-[#ff6a00]/30' : 'bg-rose-500/10 border-rose-500/30'}`}>
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Net Discrepancy</span>
                   <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">{difference === 0 ? 'Optimal' : difference > 0 ? 'Surplus' : 'Deficit'}</span>
@@ -498,10 +498,10 @@ function PumpTable({ pump, nozzles, closings, setClosings }: {
 }) {
   return (
     <div className="glass-panel overflow-hidden pt-0 px-0 pb-0">
-      <div className="p-4 border-b border-white/5 bg-blue-500/5 flex items-center justify-between">
+      <div className="p-4 border-b border-white/5 bg-[#ff6a00]/5 flex items-center justify-between">
         <h3 className="text-sm font-bold flex items-center gap-3 text-white tracking-widest uppercase">
           <div className="w-8 h-8 rounded-lg bg-black border border-white/10 flex items-center justify-center">
-             <i className="fa-solid fa-gas-pump text-blue-500"></i>
+             <i className="fa-solid fa-gas-pump text-[#ff6a00]" style={{ filter: 'drop-shadow(0 0 6px #ff6a00)' }}></i>
           </div>
           Terminal {pump}
         </h3>
@@ -540,7 +540,7 @@ function NozzleRow({ nozzle, closings, setClosings }: {
       <td style={{ padding: '16px 12px' }}>
         <input type="number" step="0.01" value={closings[nozzle.id] ?? ''}
           onChange={e => setClosings(prev => ({ ...prev, [nozzle.id]: e.target.value }))}
-          placeholder="0.00" className="w-28 focus:border-blue-500 focus:shadow-[0_0_10px_rgba(59,130,246,0.3)] bg-black/50" />
+          placeholder="0.00" className="w-28 focus:border-[#ff6a00] focus:shadow-[0_0_10px_rgba(255,106,0,0.3)] bg-black/50" />
         <motion.div 
            key={nozzle.volume}
            initial={{ opacity: 0, scale: 0.8, y: -5 }} animate={{ opacity: 1, scale: 1, y: 0 }}
