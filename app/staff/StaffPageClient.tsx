@@ -5,7 +5,7 @@ import { createBrowserClient } from '@supabase/ssr'
 import { logout } from '@/app/login/actions'
 import type { NozzleReading, CreditItem, Denomination } from '@/lib/types'
 import { motion, AnimatePresence, Variants } from 'framer-motion'
-import { containerVariants, itemVariants, pageFadeIn, magneticHover, ambientPulse } from '@/lib/motion'
+import { containerVariants, itemVariants, pageFadeIn, magneticHover, ambientPulse, buttonHover } from '@/lib/motion'
 
 const NOZZLES: Omit<NozzleReading, 'close' | 'volume'>[] = [
   { id: 'p1n1', label: 'Nozzle 1 (P1)', fuelType: 'petrol', open: 0 },
@@ -53,7 +53,7 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
     setShiftDate(localISO)
   }, [])
 
-  // Openings from DB (or fallback)
+  // Openings from DB
   const openings = { ...initialOpenings }
 
   // Calculations
@@ -85,7 +85,6 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    // Validate all closings filled
     if (!staffName) { alert('Please select your Staff Name.'); return }
     if (ratePetrol <= 0) { alert('Validation Error: Petrol rate must be greater than 0.'); return }
     if (rateDiesel <= 0) { alert('Validation Error: Diesel rate must be greater than 0.'); return }
@@ -99,7 +98,6 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
 
     setSubmitting(true)
 
-    // Calculate final inserted dates
     const finalDateStr = shiftDate || new Date().toISOString()
     const finalDateObj = new Date(finalDateStr)
     const shiftDateOnly = finalDateObj.getFullYear() + '-' + String(finalDateObj.getMonth() + 1).padStart(2, '0') + '-' + String(finalDateObj.getDate()).padStart(2, '0')
@@ -167,7 +165,6 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
       console.error('WhatsApp App API call failed:', waErr);
     }
 
-    // Update tank inventory
     try {
       await supabase.rpc('decrement_tank', { fuel: 'petrol', litres: Math.max(0, petrolLitres) })
       await supabase.rpc('decrement_tank', { fuel: 'diesel', litres: Math.max(0, dieselLitres) })
@@ -184,34 +181,32 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
         variants={pageFadeIn}
         initial="hidden"
         animate="show"
-        className="min-h-screen flex items-center justify-center p-4"
+        className="min-h-[70vh] flex items-center justify-center p-4 bg-transparent"
       >
-        <div className="text-center w-full max-w-md">
+        <div className="text-center w-full max-w-md bg-white border border-slate-200 p-8 rounded-2xl shadow-sm">
           <motion.div 
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: "spring", stiffness: 200, damping: 15 }}
-            className="w-24 h-24 rounded-[2rem] flex items-center justify-center mx-auto mb-8 relative border border-emerald-500/30"
-            style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.2), rgba(4,120,87,0.1))' }}>
-            <div className="absolute inset-0 rounded-[2rem] shadow-[0_0_40px_rgba(16,185,129,0.4)] pointer-events-none"></div>
-            <i className="fa-solid fa-check text-4xl text-emerald-400"></i>
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 240, damping: 20 }}
+            className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 relative border border-emerald-200 bg-emerald-50"
+          >
+            <i className="fa-solid fa-check text-3xl text-emerald-600"></i>
           </motion.div>
-          <h2 className="text-3xl font-extrabold text-white mb-2 tracking-tight">Shift Secured</h2>
-          <p className="text-zinc-400 font-medium tracking-wide">Ledger updated • Awaiting Manager Signature</p>
+          <h2 className="text-2xl font-black text-slate-800 mb-1.5 tracking-tight">Shift Submitted</h2>
+          <p className="text-slate-500 font-medium text-sm">Operation record generated • Pending approval</p>
           
-          <motion.div variants={itemVariants} className="glass-panel mt-8 p-6 text-left relative overflow-hidden">
-             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent"></div>
+          <motion.div variants={itemVariants} className="bg-slate-50 border border-slate-200 mt-6 p-6 rounded-xl text-left relative overflow-hidden">
             <div className="flex justify-between mb-4">
-               <span className="text-zinc-500 font-bold uppercase tracking-widest text-xs">Expected Vault</span>
-              <span className="font-bold text-white tracking-tight">₹{expectedCash.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+              <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Expected Vault</span>
+              <span className="font-extrabold text-slate-800 tracking-tight">₹{expectedCash.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             </div>
             <div className="flex justify-between mb-4">
-              <span className="text-zinc-500 font-bold uppercase tracking-widest text-xs">Counted Vault</span>
-              <span className="font-bold text-white tracking-tight">₹{countedCash.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+              <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Counted Vault</span>
+              <span className="font-extrabold text-slate-800 tracking-tight">₹{countedCash.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             </div>
-            <div className="flex justify-between pt-4 border-t border-white/5">
-              <span className="text-zinc-500 font-bold uppercase tracking-widest text-xs">Discrepancy</span>
-              <span className={`font-black text-xl tracking-tighter ${difference === 0 ? 'text-emerald-400' : difference > 0 ? 'text-blue-400' : 'text-rose-400'}`}>
+            <div className="flex justify-between pt-4 border-t border-slate-200">
+              <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Discrepancy</span>
+              <span className={`font-black text-lg tracking-tight ${difference === 0 ? 'text-emerald-600' : difference > 0 ? 'text-orange-600' : 'text-red-600'}`}>
                 {difference >= 0 ? '+' : ''}₹{difference.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
               </span>
             </div>
@@ -221,7 +216,7 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
             whileHover={magneticHover}
             whileTap={{ scale: 0.95 }}
             onClick={() => { setSubmitted(false); setClosings({}); setGpay(0); setCard(0); setExpenseAmt(0); setExpenseDesc(''); setCreditGiven([]); setCreditReceived([]); setDenoms(Object.fromEntries(DENOMINATIONS.map(d => [d, 0]))); setSubmitting(false); setRatePetrol(0); setRateDiesel(0); setRateOil(0); }}
-            className="mt-8 px-8 py-4 rounded-xl btn-primary shadow-[0_0_20px_rgba(59,130,246,0.2)] w-full uppercase tracking-widest text-sm"
+            className="mt-6 px-6 py-3.5 btn-primary w-full uppercase tracking-wider text-xs font-bold cursor-pointer"
           >
             <i className="fa-solid fa-rotate-right mr-2"></i> Initialize Next Shift
           </motion.button>
@@ -235,18 +230,18 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
       {/* Config Panel */}
       <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
         
-        <motion.div variants={itemVariants} className="glass-panel mb-6 border-l-2 border-l-[#ff6a00]">
+        <motion.div variants={itemVariants} className="glass-panel mb-6 border-l-3 border-l-[#ff6a00] bg-white">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
             <div className="w-full">
-              <label className="block text-xs font-bold mb-2 text-zinc-500 uppercase tracking-widest">Shift Protocol</label>
-              <select value={shiftType} onChange={e => setShiftType(e.target.value)} className="w-full cursor-pointer focus:ring-1 focus:ring-[#ff6a00]/50">
+              <label className="block text-[10px] font-bold mb-2 text-slate-400 uppercase tracking-widest">Shift Protocol</label>
+              <select value={shiftType} onChange={e => setShiftType(e.target.value)} className="w-full cursor-pointer bg-white border border-slate-200 text-slate-800 focus:border-[#ff6a00]">
                 <option>Morning Shift</option>
                 <option>Night Shift</option>
               </select>
             </div>
             <div className="w-full">
-              <label className="block text-xs font-bold mb-2 text-zinc-500 uppercase tracking-widest">Operator Identity</label>
-              <select required value={staffName} onChange={e => setStaffName(e.target.value)} className="w-full cursor-pointer focus:ring-1 focus:ring-[#ff6a00]/50">
+              <label className="block text-[10px] font-bold mb-2 text-slate-400 uppercase tracking-widest">Operator Identity</label>
+              <select required value={staffName} onChange={e => setStaffName(e.target.value)} className="w-full cursor-pointer bg-white border border-slate-200 text-slate-800 focus:border-[#ff6a00]">
                 <option value="" disabled>Select Operator...</option>
                 {staffNames.map(name => (
                   <option key={name} value={name}>{name}</option>
@@ -254,8 +249,8 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
               </select>
             </div>
             <div className="w-full">
-              <label className="block text-xs font-bold mb-2 text-zinc-500 uppercase tracking-widest">Timestamp</label>
-              <input type="datetime-local" value={shiftDate} onChange={e => setShiftDate(e.target.value)} required className="w-full cursor-text" />
+              <label className="block text-[10px] font-bold mb-2 text-slate-400 uppercase tracking-widest">Timestamp</label>
+              <input type="datetime-local" value={shiftDate} onChange={e => setShiftDate(e.target.value)} required className="w-full bg-white border border-slate-200 text-slate-800 focus:border-[#ff6a00]" />
             </div>
           </div>
         </motion.div>
@@ -264,23 +259,23 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
           {/* LEFT COLUMN */}
           <div className="space-y-6">
             {/* Fuel Rates */}
-            <motion.div variants={itemVariants} className="glass-panel">
-              <h3 className="text-sm font-bold flex items-center gap-3 mb-6 text-white tracking-widest uppercase">
-                <i className="fa-solid fa-tags text-zinc-500"></i>
+            <motion.div variants={itemVariants} className="glass-panel bg-white">
+              <h3 className="text-xs font-bold flex items-center gap-3.5 mb-6 text-slate-800 tracking-widest uppercase">
+                <i className="fa-solid fa-tags text-[#ff6a00]"></i>
                 Exchange Rates (₹/L)
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-orange-500/5 p-3 rounded-xl border border-orange-500/20">
-                  <label className="block text-[10px] font-bold mb-2 text-orange-400 uppercase tracking-widest">Petrol</label>
-                  <PaymentInput step="0.01" value={ratePetrol} onChange={setRatePetrol} className="bg-transparent border-none p-0 text-xl font-bold text-white focus:ring-0 shadow-none h-auto" />
+                <div className="bg-orange-50/50 p-3.5 rounded-xl border border-orange-100/80">
+                  <label className="block text-[10px] font-bold mb-2 text-[#cc5200] uppercase tracking-widest">Petrol</label>
+                  <PaymentInput step="0.01" value={ratePetrol} onChange={setRatePetrol} className="bg-transparent border-none p-0 text-xl font-black text-slate-800 focus:ring-0 shadow-none h-auto" />
                 </div>
-                <div className="bg-sky-500/5 p-3 rounded-xl border border-sky-500/20">
-                  <label className="block text-[10px] font-bold mb-2 text-sky-400 uppercase tracking-widest">Diesel</label>
-                  <PaymentInput step="0.01" value={rateDiesel} onChange={setRateDiesel} className="bg-transparent border-none p-0 text-xl font-bold text-white focus:ring-0 shadow-none h-auto" />
+                <div className="bg-sky-50/50 p-3.5 rounded-xl border border-sky-100/80">
+                  <label className="block text-[10px] font-bold mb-2 text-[#0369a1] uppercase tracking-widest">Diesel</label>
+                  <PaymentInput step="0.01" value={rateDiesel} onChange={setRateDiesel} className="bg-transparent border-none p-0 text-xl font-black text-slate-800 focus:ring-0 shadow-none h-auto" />
                 </div>
-                <div className="bg-purple-500/5 p-3 rounded-xl border border-purple-500/20">
-                  <label className="block text-[10px] font-bold mb-2 text-purple-400 uppercase tracking-widest">2T Oil</label>
-                  <PaymentInput step="0.01" value={rateOil} onChange={setRateOil} className="bg-transparent border-none p-0 text-xl font-bold text-white focus:ring-0 shadow-none h-auto" />
+                <div className="bg-purple-50/50 p-3.5 rounded-xl border border-purple-100/80">
+                  <label className="block text-[10px] font-bold mb-2 text-[#7e22ce] uppercase tracking-widest">2T Oil</label>
+                  <PaymentInput step="0.01" value={rateOil} onChange={setRateOil} className="bg-transparent border-none p-0 text-xl font-black text-slate-800 focus:ring-0 shadow-none h-auto" />
                 </div>
               </div>
             </motion.div>
@@ -294,21 +289,21 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
               <PumpTable pump="02" nozzles={nozzleCalcs.slice(2, 4)} closings={closings} setClosings={setClosings} />
             </motion.div>
             {/* 2T Oil */}
-            <motion.div variants={itemVariants} className="glass-panel overflow-hidden border-t-2 border-t-purple-500 pt-0 px-0 pb-0">
-               <div className="p-4 border-b border-white/5 bg-purple-500/5 flex items-center justify-between">
-                 <h3 className="text-sm font-bold flex items-center gap-3 text-white tracking-widest uppercase">
-                   <div className="w-8 h-8 rounded-lg bg-black border border-white/10 flex items-center justify-center">
-                      <i className="fa-solid fa-oil-can text-purple-400"></i>
-                   </div>
-                   2T Oil Dispenser
+            <motion.div variants={itemVariants} className="glass-panel bg-white overflow-hidden border-t-3 border-t-purple-500 pt-0 px-0 pb-0">
+               <div className="p-4 border-b border-slate-100 bg-purple-50/40 flex items-center justify-between">
+                 <h3 className="text-xs font-bold flex items-center gap-3 text-slate-800 tracking-widest uppercase">
+                    <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center">
+                       <i className="fa-solid fa-oil-can text-purple-600"></i>
+                    </div>
+                    2T Oil Dispenser
                  </h3>
                </div>
-              <div className="overflow-x-auto p-4">
+              <div className="overflow-x-auto p-4 bg-white">
                 <table className="w-full text-[13px] border-collapse">
                   <thead>
-                    <tr className="border-b border-white/5">
+                    <tr className="border-b border-slate-100">
                       {['Nozzle', 'Fuel', 'Opening', 'Closing'].map(h => (
-                        <th key={h} className="text-zinc-500 font-bold uppercase tracking-widest text-[10px] py-3 text-left">{h}</th>
+                        <th key={h} className="text-slate-400 font-bold uppercase tracking-widest text-[9px] py-3.5 text-left">{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -323,32 +318,32 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
           {/* RIGHT COLUMN */}
           <div className="space-y-6">
             
-            {/* Live Calculation Display (Sticky-ish logic header) */}
-            <motion.div variants={itemVariants} className="glass-panel border-r-2 border-r-[#ff6a00] p-6 flex flex-col justify-center shadow-[inset_0_4px_24px_rgba(0,0,0,0.5)]">
-               <div className="text-[10px] font-bold text-zinc-500 tracking-widest uppercase mb-1">Live Telemetry</div>
+            {/* Live Calculation Display */}
+            <motion.div variants={itemVariants} className="glass-panel border-r-3 border-r-[#ff6a00] p-6 flex flex-col justify-center bg-white shadow-sm">
+               <div className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-1">Telemetry Aggregate</div>
                <div className="flex justify-between items-end">
-                 <div className="text-zinc-300 font-medium">Expected Vault Balance</div>
+                 <div className="text-slate-600 font-semibold text-sm">Expected Vault Balance</div>
                  <motion.div 
                     key={expectedCash}
                     variants={ambientPulse}
                     animate="animate"
-                    className="text-4xl font-black text-white tracking-tighter"
+                    className="text-4xl font-black text-slate-800 tracking-tight"
                   >
                    ₹{expectedCash.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                  </motion.div>
                </div>
             </motion.div>
 
-            {/* Morning Test Toggle */}
-            <motion.div variants={itemVariants} className="glass-panel" style={{ padding: '16px 24px' }}>
+            {/* Calibration Test Toggle */}
+            <motion.div variants={itemVariants} className="glass-panel bg-white" style={{ padding: '16px 24px' }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                   <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
-                     <i className="fa-solid fa-vial text-orange-400"></i>
+                   <div className="w-10 h-10 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center">
+                     <i className="fa-solid fa-vial text-[#ff6a00]"></i>
                    </div>
                    <div>
-                     <h3 className="text-[13px] font-bold text-white tracking-wide">Morning Test Performed?</h3>
-                     <p className="text-[11px] mt-0.5 text-zinc-500 font-medium tracking-wide">Deducts 10L Petrol + 10L Diesel</p>
+                     <h3 className="text-[13px] font-bold text-slate-700 tracking-wide">Calibration Test Performed?</h3>
+                     <p className="text-[11px] mt-0.5 text-slate-400 font-medium">Deducts 10L Petrol + 10L Diesel</p>
                    </div>
                 </div>
                 <label className="toggle-switch transform scale-110">
@@ -359,28 +354,28 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
             </motion.div>
 
             {/* Digital Payments */}
-            <motion.div variants={itemVariants} className="glass-panel">
-              <h3 className="text-sm font-bold flex items-center gap-3 mb-6 text-white tracking-widest uppercase">
-                <i className="fa-solid fa-wifi text-sky-400"></i>Digital Ledger
+            <motion.div variants={itemVariants} className="glass-panel bg-white">
+              <h3 className="text-xs font-bold flex items-center gap-3.5 mb-6 text-slate-800 tracking-widest uppercase">
+                <i className="fa-solid fa-wifi text-[#0ea5e9]"></i>Digital Ledger
               </h3>
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 group">
-                  <label className="text-xs font-bold sm:w-40 shrink-0 text-zinc-500 uppercase tracking-widest group-hover:text-zinc-300 transition-colors flex items-center gap-2">
+                  <label className="text-[10px] font-bold sm:w-40 shrink-0 text-slate-500 uppercase tracking-widest group-hover:text-slate-800 transition-colors flex items-center gap-2">
                     <i className="fa-brands fa-google-pay text-lg"></i> UPI Network
                   </label>
-                  <PaymentInput value={gpay} onChange={setGpay} className="focus:shadow-[0_0_15px_rgba(59,130,246,0.3)] bg-black/40" />
+                  <PaymentInput value={gpay} onChange={setGpay} className="bg-white border border-slate-200 text-slate-800 focus:border-[#ff6a00] focus:shadow-sm" />
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 group">
-                  <label className="text-xs font-bold sm:w-40 shrink-0 text-zinc-500 uppercase tracking-widest group-hover:text-zinc-300 transition-colors flex items-center gap-2">
-                    <i className="fa-regular fa-credit-card"></i> POS Swipes
+                  <label className="text-[10px] font-bold sm:w-40 shrink-0 text-slate-500 uppercase tracking-widest group-hover:text-slate-800 transition-colors flex items-center gap-2">
+                    <i className="fa-regular fa-credit-card text-sm"></i> POS Swipes
                   </label>
-                  <PaymentInput value={card} onChange={setCard} className="focus:shadow-[0_0_15px_rgba(59,130,246,0.3)] bg-black/40" />
+                  <PaymentInput value={card} onChange={setCard} className="bg-white border border-slate-200 text-slate-800 focus:border-[#ff6a00] focus:shadow-sm" />
                 </div>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 group border-t border-white/5 pt-4 mt-2">
-                  <label className="text-xs font-bold sm:w-40 shrink-0 text-zinc-500 uppercase tracking-widest group-hover:text-zinc-300 transition-colors flex items-center gap-2">
-                    <i className="fa-solid fa-receipt"></i> Operations Exp.
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 group border-t border-slate-100 pt-4 mt-2">
+                  <label className="text-[10px] font-bold sm:w-40 shrink-0 text-slate-500 uppercase tracking-widest group-hover:text-slate-800 transition-colors flex items-center gap-2">
+                    <i className="fa-solid fa-receipt text-sm"></i> Operational Exp.
                   </label>
-                  <PaymentInput value={expenseAmt} onChange={setExpenseAmt} className="focus:shadow-[0_0_15px_rgba(59,130,246,0.3)] bg-black/40" />
+                  <PaymentInput value={expenseAmt} onChange={setExpenseAmt} className="bg-white border border-slate-200 text-slate-800 focus:border-[#ff6a00] focus:shadow-sm" />
                 </div>
                 <AnimatePresence>
                   {expenseAmt > 0 && (
@@ -391,7 +386,7 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
                       className="origin-top"
                     >
                       <input type="text" value={expenseDesc} onChange={e => setExpenseDesc(e.target.value)}
-                        placeholder="Expense justification (e.g. Server maintenance, Tea)" className="bg-black/60 border-dashed border-zinc-600 focus:border-zinc-400 text-sm" />
+                        placeholder="Expense justification (e.g. Tea, Maintenance)" className="bg-white border-dashed border-slate-300 focus:border-slate-400 text-slate-800 text-sm mt-2" />
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -399,9 +394,9 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
             </motion.div>
 
             {/* Credit Management */}
-            <motion.div variants={itemVariants} className="glass-panel">
-              <h3 className="text-sm font-bold flex items-center gap-3 mb-6 text-white tracking-widest uppercase">
-                <i className="fa-solid fa-file-contract text-rose-400"></i>Credit Protocols
+            <motion.div variants={itemVariants} className="glass-panel bg-white">
+              <h3 className="text-xs font-bold flex items-center gap-3.5 mb-6 text-slate-800 tracking-widest uppercase">
+                <i className="fa-solid fa-file-contract text-red-500"></i>Credit Accounts
               </h3>
               <CreditSection type="given" label="Credit Issued"
                 items={creditGiven} setItems={setCreditGiven}
@@ -414,71 +409,68 @@ export default function StaffPageClient({ staffNames, initialOpenings }: StaffPa
             </motion.div>
 
             {/* Cash Denominations */}
-            <motion.div variants={itemVariants} className="glass-panel">
-              <h3 className="text-sm font-bold flex items-center gap-3 mb-6 text-white tracking-widest uppercase">
-                <i className="fa-solid fa-wallet text-emerald-400"></i>Physical Vault Count
+            <motion.div variants={itemVariants} className="glass-panel bg-white">
+              <h3 className="text-xs font-bold flex items-center gap-3.5 mb-6 text-slate-800 tracking-widest uppercase">
+                <i className="fa-solid fa-wallet text-emerald-500"></i>Physical Currency Count
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                 {DENOMINATIONS.map((d, i) => (
-                  <motion.div key={d} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }} className="flex items-center gap-2 bg-black/30 p-2 rounded-xl border border-white/5">
-                    <div className="w-10 h-8 rounded shrink-0 bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-[11px] font-bold text-emerald-400">
+                  <motion.div key={d} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.03 }} className="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200/60">
+                    <div className="w-10 h-8 rounded shrink-0 bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[11px] font-bold text-emerald-700 shadow-sm">
                       ₹{d}
                     </div>
                     <PaymentInput inputMode="numeric" value={denoms[d] || 0}
-                      onChange={val => setDenoms(prev => ({ ...prev, [d]: val }))} className="h-8 !px-2 bg-transparent border-none text-center hover:bg-white/5 focus:bg-white/10" />
-                    <div className="text-[11px] w-16 text-right font-bold shrink-0 text-zinc-400">
+                      onChange={val => setDenoms(prev => ({ ...prev, [d]: val }))} className="h-8 !px-2 bg-transparent border-none text-slate-800 text-center hover:bg-slate-100 focus:bg-slate-100 font-bold" />
+                    <div className="text-[11px] w-16 text-right font-bold shrink-0 text-slate-500">
                       = ₹{((denoms[d] || 0) * d).toLocaleString()}
                     </div>
                   </motion.div>
                 ))}
               </div>
               
-              <div className="p-4 rounded-xl bg-black border border-white/10 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] flex justify-between items-center">
-                <span className="font-bold text-zinc-400 uppercase tracking-widest text-[11px]">Total Sum</span>
-                <motion.span key={countedCash} initial={{ scale: 1.1, color: '#fff' }} animate={{ scale: 1, color: '#34d399' }} className="text-2xl font-black text-emerald-400">₹{countedCash.toLocaleString()}</motion.span>
+              <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex justify-between items-center shadow-md">
+                <span className="font-bold text-slate-300 uppercase tracking-widest text-[9px]">Drawer Sum</span>
+                <motion.span key={countedCash} initial={{ scale: 1.05 }} animate={{ scale: 1 }} className="text-2xl font-black text-emerald-400">₹{countedCash.toLocaleString()}</motion.span>
               </div>
             </motion.div>
 
             {/* Reconciliation */}
-            <motion.div variants={itemVariants} className="glass-panel relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-8 opacity-5">
-                 <i className="fa-solid fa-scale-balanced text-9xl"></i>
-              </div>
-              <h2 className="text-lg font-bold mb-6 text-white tracking-tight relative z-10">Reconciliation Matrix</h2>
+            <motion.div variants={itemVariants} className="glass-panel bg-white relative overflow-hidden">
+              <h2 className="text-lg font-bold mb-6 text-slate-800 tracking-tight">Reconciliation Ledger</h2>
               
-              <div className="space-y-3 text-[13px] relative z-10 mb-6 font-medium">
-                <ReconcRow label="Gross Dispatch Value" value={`₹${grossSales.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`} />
-                {testPerformed && <ReconcRow label="Calibration Deduction (-)" value={`₹${testCost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`} valueColor="#ef4444" />}
-                <ReconcRow label="Digital Transfer (-)" value={`₹${digitalTotal.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`} valueColor="#ef4444" />
-                <ReconcRow label="Credit Issued (-)" value={`₹${totalCreditGiven.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`} valueColor="#ef4444" />
-                <ReconcRow label="Operational Expenses (-)" value={`₹${expenseAmt.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`} valueColor="#ef4444" />
-                <ReconcRow label="Credit Recovered (+)" value={`₹${totalCreditReceived.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`} valueColor="#34d399" />
+              <div className="space-y-2 text-[13px] font-medium">
+                <ReconcRow label="Gross Sales Value" value={`₹${grossSales.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`} />
+                {testPerformed && <ReconcRow label="Calibration Deduction (-)" value={`₹${testCost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`} valueColor="#dc2626" />}
+                <ReconcRow label="Digital Transfer (-)" value={`₹${digitalTotal.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`} valueColor="#dc2626" />
+                <ReconcRow label="Credit Issued (-)" value={`₹${totalCreditGiven.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`} valueColor="#dc2626" />
+                <ReconcRow label="Operational Expenses (-)" value={`₹${expenseAmt.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`} valueColor="#dc2626" />
+                <ReconcRow label="Credit Recovered (+)" value={`₹${totalCreditReceived.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`} valueColor="#059669" />
               </div>
               
-              <div className="h-px w-full bg-white/10 mb-6 relative z-10"></div>
+              <div className="h-px w-full bg-slate-200 my-6"></div>
               
-              <div className={`p-5 rounded-2xl mb-8 relative z-10 border transition-colors duration-500 shadow-xl ${difference === 0 ? 'bg-emerald-500/10 border-emerald-500/30' : difference > 0 ? 'bg-[#ff6a00]/10 border-[#ff6a00]/30' : 'bg-rose-500/10 border-rose-500/30'}`}>
+              <div className={`p-5 rounded-2xl mb-6 border transition-all duration-300 shadow-sm ${difference === 0 ? 'bg-emerald-50 border-emerald-200' : difference > 0 ? 'bg-orange-50 border-orange-200' : 'bg-red-50 border-red-200'}`}>
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Net Discrepancy</span>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">{difference === 0 ? 'Optimal' : difference > 0 ? 'Surplus' : 'Deficit'}</span>
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Net Balance Status</span>
+                  <span className={`text-[9px] font-extrabold uppercase tracking-widest ${difference === 0 ? 'text-emerald-700' : difference > 0 ? 'text-orange-700' : 'text-red-700'}`}>{difference === 0 ? 'Optimal' : difference > 0 ? 'Surplus' : 'Deficit'}</span>
                 </div>
                 <div className="flex justify-between items-end">
-                  <span className="text-sm font-semibold text-white">Counted - Expected</span>
-                  <span className={`text-2xl font-black tracking-tighter ${difference === 0 ? 'text-emerald-400' : difference > 0 ? 'text-blue-400' : 'text-rose-400'}`}>
+                  <span className="text-xs font-semibold text-slate-600">Drawer - Expectancy</span>
+                  <span className={`text-2xl font-black tracking-tight ${difference === 0 ? 'text-emerald-700' : difference > 0 ? 'text-orange-700' : 'text-red-700'}`}>
                     {difference >= 0 ? '+' : ''}₹{difference.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
               </div>
 
               <motion.button type="submit" disabled={submitting}
-                whileHover={!submitting ? magneticHover : {}}
+                whileHover={!submitting ? buttonHover : {}}
                 whileTap={!submitting ? { scale: 0.98 } : {}}
-                className={`w-full py-5 text-[15px] transition-all shadow-[0_0_20px_rgba(59,130,246,0.2)] tracking-widest uppercase ${submitting ? '' : 'btn-primary'}`}
-                style={submitting ? { background: '#1c1c21', color: '#71717a', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', cursor: 'not-allowed' } : {}}>
+                className={`w-full py-4 text-[13px] font-extrabold transition-all tracking-wider uppercase cursor-pointer ${submitting ? '' : 'btn-primary'}`}
+                style={submitting ? { background: '#cbd5e1', color: '#64748b', border: '1px solid #cbd5e1', borderRadius: '12px', cursor: 'not-allowed' } : {}}>
                 {submitting ? (
-                  <><i className="fa-solid fa-spinner fa-spin mr-3"></i>Committing to Ledger...</>
+                  <><i className="fa-solid fa-spinner fa-spin mr-3"></i>Submitting shift logs...</>
                 ) : (
-                  <><i className="fa-solid fa-microchip mr-3"></i>Commit Operations</>
+                  <><i className="fa-solid fa-cloud-arrow-up mr-3"></i>Commit Operations</>
                 )}
               </motion.button>
             </motion.div>
@@ -497,21 +489,21 @@ function PumpTable({ pump, nozzles, closings, setClosings }: {
   setClosings: React.Dispatch<React.SetStateAction<Record<string, string>>>
 }) {
   return (
-    <div className="glass-panel overflow-hidden pt-0 px-0 pb-0">
-      <div className="p-4 border-b border-white/5 bg-[#ff6a00]/5 flex items-center justify-between">
-        <h3 className="text-sm font-bold flex items-center gap-3 text-white tracking-widest uppercase">
-          <div className="w-8 h-8 rounded-lg bg-black border border-white/10 flex items-center justify-center">
-             <i className="fa-solid fa-gas-pump text-[#ff6a00]" style={{ filter: 'drop-shadow(0 0 6px #ff6a00)' }}></i>
+    <div className="glass-panel bg-white overflow-hidden pt-0 px-0 pb-0 shadow-sm">
+      <div className="p-4 border-b border-slate-100 bg-orange-50/40 flex items-center justify-between">
+        <h3 className="text-xs font-bold flex items-center gap-3 text-slate-800 tracking-widest uppercase">
+          <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center shadow-sm">
+             <i className="fa-solid fa-gas-pump text-[#ff6a00]"></i>
           </div>
-          Terminal {pump}
+          Terminal Pump {pump}
         </h3>
       </div>
-      <div className="overflow-x-auto p-4">
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+      <div className="overflow-x-auto p-4 bg-white">
+        <table className="w-full text-[13px] border-collapse">
           <thead>
-            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+            <tr className="border-b border-slate-100">
               {['Nozzle', 'Fuel', 'Opening', 'Closing'].map(h => (
-                <th key={h} className="text-zinc-500 font-bold uppercase tracking-widest text-[10px] py-3 text-left">{h}</th>
+                <th key={h} className="text-slate-400 font-bold uppercase tracking-widest text-[9px] py-3.5 text-left">{h}</th>
               ))}
             </tr>
           </thead>
@@ -530,23 +522,23 @@ function NozzleRow({ nozzle, closings, setClosings }: {
   setClosings: React.Dispatch<React.SetStateAction<Record<string, string>>>
 }) {
   const badgeClass = nozzle.fuelType === 'petrol' ? 'petrol-badge' : nozzle.fuelType === 'diesel' ? 'diesel-badge' : 'oil-badge'
-  const accentBorderColor = nozzle.fuelType === 'petrol' ? 'rgba(249, 115, 22, 0.4)' : nozzle.fuelType === 'diesel' ? 'rgba(14, 165, 233, 0.4)' : 'rgba(139, 92, 246, 0.4)'
+  const accentBorderColor = nozzle.fuelType === 'petrol' ? 'rgba(255, 106, 0, 0.2)' : nozzle.fuelType === 'diesel' ? 'rgba(14, 165, 233, 0.2)' : 'rgba(126, 34, 206, 0.2)'
 
   return (
     <tr className="enhanced-row" style={{ borderLeft: `2px solid ${accentBorderColor}` }}>
-      <td style={{ padding: '16px 12px', color: 'white', fontWeight: 600 }}>{nozzle.label}</td>
+      <td className="font-semibold text-slate-800" style={{ padding: '16px 12px' }}>{nozzle.label}</td>
       <td style={{ padding: '16px 12px' }}><span className={`badge ${badgeClass}`}>{nozzle.fuelType.charAt(0).toUpperCase() + nozzle.fuelType.slice(1)}</span></td>
-      <td style={{ padding: '16px 12px' }}><input type="number" value={nozzle.open.toFixed(2)} readOnly className="w-24 bg-transparent border-dashed border-white/10" /></td>
+      <td style={{ padding: '16px 12px' }}><input type="number" value={nozzle.open.toFixed(2)} readOnly className="w-24 bg-slate-50 border-dashed border-slate-200 text-slate-500 font-medium" /></td>
       <td style={{ padding: '16px 12px' }}>
         <input type="number" step="0.01" value={closings[nozzle.id] ?? ''}
           onChange={e => setClosings(prev => ({ ...prev, [nozzle.id]: e.target.value }))}
-          placeholder="0.00" className="w-28 focus:border-[#ff6a00] focus:shadow-[0_0_10px_rgba(255,106,0,0.3)] bg-black/50" />
+          placeholder="0.00" className="w-28 bg-white border border-slate-200 text-slate-800 focus:border-[#ff6a00]" />
         <motion.div 
            key={nozzle.volume}
-           initial={{ opacity: 0, scale: 0.8, y: -5 }} animate={{ opacity: 1, scale: 1, y: 0 }}
-           className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-2"
+           initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+           className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-2"
         >
-          {nozzle.volume > 0 && <span className="text-emerald-400">+{nozzle.volume.toFixed(2)} Vol</span>}
+          {nozzle.volume > 0 && <span className="text-emerald-600 font-bold">+{nozzle.volume.toFixed(2)} Litres</span>}
         </motion.div>
       </td>
     </tr>
@@ -571,15 +563,15 @@ function CreditSection({ type, label, items, setItems, nameVal, setName, amtVal,
 
   return (
     <div className={cardClass}>
-      <h4 className="text-[13px] font-bold mb-1 tracking-wide uppercase" style={{ color }}>{label}</h4>
-      <p className="text-[10px] mb-5 text-zinc-500 font-medium uppercase tracking-widest">{type === 'given' ? 'Deducts from Expected Vault' : 'Adds to Expected Vault'}</p>
-      <div className="flex flex-col sm:flex-row gap-3 mb-5">
-        <input type="text" placeholder="Identifier / License Plate" value={nameVal} onChange={e => setName(e.target.value)}
-          className="w-full text-sm bg-black/40" onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), add())} />
+      <h4 className="text-[12px] font-bold mb-1 tracking-wide uppercase" style={{ color }}>{label}</h4>
+      <p className="text-[9px] mb-4 text-slate-400 font-semibold uppercase tracking-wider">{type === 'given' ? 'Deducted from Expected Vault' : 'Added to Expected Vault'}</p>
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <input type="text" placeholder="Identifier / Plate Num" value={nameVal} onChange={e => setName(e.target.value)}
+          className="w-full text-sm bg-white border border-slate-200 text-slate-800 focus:border-[#ff6a00]" onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), add())} />
         <input type="number" placeholder="Value (₹)" value={amtVal} onChange={e => setAmt(e.target.value)}
-          className="w-full sm:w-32 text-sm bg-black/40" onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), add())} />
-        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} type="button" onClick={add} className="btn-primary w-full sm:w-auto px-6 py-2 shadow-none border border-white/10 shrink-0">
-           <i className="fa-solid fa-plus"></i> Add
+          className="w-full sm:w-32 text-sm bg-white border border-slate-200 text-slate-800 focus:border-[#ff6a00]" onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), add())} />
+        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type="button" onClick={add} className="btn-secondary w-full sm:w-auto px-5 py-2 shrink-0 cursor-pointer text-xs font-bold border-slate-200">
+           <i className="fa-solid fa-plus text-[#ff6a00]"></i> Add
         </motion.button>
       </div>
       <ul className="space-y-2">
@@ -587,16 +579,16 @@ function CreditSection({ type, label, items, setItems, nameVal, setName, amtVal,
           {items.map((item, i) => (
             <motion.li 
               key={i} 
-              initial={{ opacity: 0, height: 0, scale: 0.95 }} 
+              initial={{ opacity: 0, height: 0, scale: 0.98 }} 
               animate={{ opacity: 1, height: 'auto', scale: 1 }} 
-              exit={{ opacity: 0, height: 0, scale: 0.95 }}
-              className="flex justify-between items-center py-2 px-3 text-sm bg-black/30 border border-white/5 rounded-xl"
+              exit={{ opacity: 0, height: 0, scale: 0.98 }}
+              className="flex justify-between items-center py-2.5 px-3 text-sm bg-slate-50 border border-slate-200/60 rounded-xl"
             >
-              <span className="text-zinc-300 font-semibold">{item.name}</span>
+              <span className="text-slate-600 font-semibold">{item.name}</span>
               <span className="font-bold flex items-center gap-3" style={{ color }}>
                 ₹{item.amt.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                 <button type="button" onClick={() => setItems(prev => prev.filter((_, j) => j !== i))}
-                  className="text-zinc-500 hover:text-red-500 transition-colors w-6 h-6 flex items-center justify-center bg-white/5 rounded hover:bg-red-500/20"
+                  className="text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors w-6 h-6 flex items-center justify-center bg-slate-100 rounded border border-slate-200/50 cursor-pointer"
                 >
                   <i className="fa-solid fa-xmark text-xs"></i>
                 </button>
@@ -606,7 +598,7 @@ function CreditSection({ type, label, items, setItems, nameVal, setName, amtVal,
         </AnimatePresence>
       </ul>
       {items.length > 0 && (
-        <div className="text-right text-[11px] font-black uppercase tracking-widest mt-4 pt-4 border-t border-white/5" style={{ color }}>
+        <div className="text-right text-[10px] font-extrabold uppercase tracking-widest mt-4 pt-4 border-t border-slate-100" style={{ color }}>
           Aggregate: ₹{items.reduce((s, c) => s + c.amt, 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
         </div>
       )}
@@ -616,9 +608,9 @@ function CreditSection({ type, label, items, setItems, nameVal, setName, amtVal,
 
 function ReconcRow({ label, value, valueColor }: { label: string; value: string; valueColor?: string }) {
   return (
-    <div className="flex justify-between py-1.5 px-3 rounded-lg hover:bg-white/5 transition-colors">
-      <span className="text-zinc-400">{label}</span>
-      <span className="font-bold tracking-tight" style={{ color: valueColor || '#fafafa' }}>{value}</span>
+    <div className="flex justify-between py-2 px-3 rounded-lg hover:bg-slate-50 transition-colors">
+      <span className="text-slate-500 text-xs font-semibold">{label}</span>
+      <span className="font-extrabold tracking-tight" style={{ color: valueColor || '#1e293b' }}>{value}</span>
     </div>
   )
 }

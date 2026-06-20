@@ -22,19 +22,15 @@ export function AdminSidebar({ adminName }: { adminName: string }) {
 
   return (
     <>
-      {/* Mobile Hamburger Header (Premium Brand Theme) */}
-      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-[#060813]/90 backdrop-blur-xl border-b border-white/5 z-30 flex items-center justify-between px-5 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+      {/* Mobile Hamburger Header (Premium Light Theme) */}
+      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/60 z-30 flex items-center justify-between px-5 shadow-sm">
         <div className="flex items-center gap-3">
-          <motion.div 
-            animate={{ rotate: [0, 360] }}
-            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-            className="w-8 h-8 rounded-lg bg-black flex items-center justify-center border border-white/10 shadow-[0_0_15px_rgba(255,106,0,0.25)]"
-          >
-            <i className="fa-solid fa-gas-pump text-[#ff6a00] text-[13px]" style={{ filter: 'drop-shadow(0 0 6px #ff6a00)' }}></i>
-          </motion.div>
-          <div className="font-extrabold text-white text-[15px] tracking-tight">Sai Priya Fuels</div>
+          <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-200 shadow-sm">
+            <i className="fa-solid fa-gas-pump text-[#ff6a00] text-[13px]"></i>
+          </div>
+          <div className="font-extrabold text-slate-800 text-[15px] tracking-tight">Sai Priya Fuels</div>
         </div>
-        <button onClick={() => setIsOpen(true)} className="p-2.5 text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-colors border border-white/5">
+        <button onClick={() => setIsOpen(true)} className="p-2 text-slate-500 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200">
           <i className="fa-solid fa-bars text-sm"></i>
         </button>
       </div>
@@ -46,61 +42,54 @@ export function AdminSidebar({ adminName }: { adminName: string }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="md:hidden fixed inset-0 bg-black/85 backdrop-blur-md z-40"
+            className="md:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40"
             onClick={() => setIsOpen(false)}
           />
         )}
       </AnimatePresence>
 
-      {/* Sidebar - Pure Obsidian & Orange Brand Accent */}
+      {/* Sidebar - Pure White & Orange Active highlights */}
       <aside 
-        className={`fixed top-0 left-0 z-50 h-[100vh] w-[280px] bg-[#070914] border-r border-white/5 flex flex-col transition-transform duration-500 cubic-bezier(0.16, 1, 0.3, 1) md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'} shadow-[4px_0_40px_rgba(0,0,0,0.6)] text-zinc-200`}
+        className={`fixed top-0 left-0 z-50 h-[100vh] w-[260px] bg-white border-r border-slate-200/80 flex flex-col transition-transform duration-500 cubic-bezier(0.16, 1, 0.3, 1) md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'} shadow-[4px_0_24px_rgba(0,0,0,0.02)] text-slate-700`}
       >
         {/* Logo Section */}
-        <div className="p-7 px-6 flex items-center justify-between relative overflow-hidden">
-          {/* Subtle brand gradient background glow */}
-          <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[#ff6a00]/8 to-transparent pointer-events-none"></div>
-          
-          <div className="flex items-center gap-4 relative z-10">
-            <motion.div 
-              animate={{ rotate: [0, 360] }}
-              transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-              className="w-11 h-11 rounded-xl bg-black border border-white/10 flex items-center justify-center shadow-[0_4px_20px_rgba(255,106,0,0.2)]"
-            >
-              <i className="fa-solid fa-gas-pump text-[#ff6a00] text-[17px]" style={{ filter: 'drop-shadow(0 0 8px #ff6a00)' }}></i>
-            </motion.div>
+        <div className="p-6 flex items-center justify-between border-b border-slate-100 relative overflow-hidden">
+          <div className="flex items-center gap-3.5 relative z-10">
+            <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center shadow-sm">
+              <i className="fa-solid fa-gas-pump text-[#ff6a00] text-base"></i>
+            </div>
             <div>
-              <div className="font-black text-white text-[16px] tracking-tight">Sai Priya Fuels</div>
-              <div className="text-[10px] text-[#ff6a00] font-bold tracking-[0.2em] uppercase mt-1">Console</div>
+              <div className="font-black text-slate-800 text-[15px] tracking-tight">Sai Priya Fuels</div>
+              <div className="text-[9px] text-[#ff6a00] font-bold tracking-[0.15em] uppercase mt-0.5">ERP Command</div>
             </div>
           </div>
-          <button className="md:hidden p-2 text-zinc-500 hover:text-white rounded-lg transition-colors relative z-10" onClick={() => setIsOpen(false)}>
+          <button className="md:hidden p-2 text-slate-400 hover:text-slate-900 rounded-lg transition-colors relative z-10" onClick={() => setIsOpen(false)}>
             <i className="fa-solid fa-xmark text-lg"></i>
           </button>
         </div>
 
-        {/* Nav */}
-        <nav className="px-3 py-2 flex-1 overflow-y-auto space-y-1.5 custom-scrollbar relative z-10">
-          <div className="px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Modules</div>
-          {NAV_ITEMS.map((item, i) => {
+        {/* Nav list */}
+        <nav className="px-3 py-4 flex-1 overflow-y-auto space-y-1 custom-scrollbar">
+          <div className="px-4 py-2 text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Navigation Modules</div>
+          {NAV_ITEMS.map((item) => {
             const active = pathname === item.href
             return (
               <Link key={item.href} href={item.href} onClick={() => setIsOpen(false)} className="relative block">
                 <motion.div 
-                  whileHover={{ x: 4 }}
-                  className={`flex items-center gap-3.5 px-4 py-3 rounded-xl text-[13px] font-semibold transition-colors duration-200 ${
+                  whileHover={{ x: 2 }}
+                  className={`flex items-center gap-3.5 px-4 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200 ${
                     active 
-                      ? 'text-white bg-white/5 border border-white/5 shadow-inner' 
-                      : 'text-slate-400 hover:text-zinc-200 hover:bg-white/5 border border-transparent'
+                      ? 'text-[#ff6a00] bg-orange-50/60 shadow-sm border border-orange-100/50' 
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent'
                   }`}
                 >
                   {active && (
                     <motion.div 
                       layoutId="activeNavTab" 
-                      className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-[#ff6a00] rounded-full shadow-[0_0_12px_#ff6a00]"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-[#ff6a00] rounded-full shadow-[0_0_8px_rgba(255,106,0,0.3)]"
                     />
                   )}
-                  <i className={`fa-solid ${item.icon} w-5 text-center transition-all ${active ? 'text-[#ff6a00]' : 'opacity-70 group-hover:opacity-100'}`}></i>
+                  <i className={`fa-solid ${item.icon} w-5 text-center text-sm transition-all ${active ? 'text-[#ff6a00]' : 'opacity-70'}`}></i>
                   {item.label}
                 </motion.div>
               </Link>
@@ -108,25 +97,25 @@ export function AdminSidebar({ adminName }: { adminName: string }) {
           })}
         </nav>
 
-        {/* User + Logout */}
-        <div className="p-5 border-t border-white/5 bg-[#070914] relative z-10 mt-auto">
-          <div className="flex items-center gap-3 mb-4 px-1">
-            <div className="w-9 h-9 rounded-full bg-slate-900 border border-white/10 flex items-center justify-center text-[#ff6a00] font-black text-xs shadow-inner">
+        {/* User initials + Logout Panel */}
+        <div className="p-4 border-t border-slate-100 bg-slate-50/50 mt-auto">
+          <div className="flex items-center gap-3 mb-3 px-1">
+            <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 font-bold text-xs">
               {adminName.charAt(0).toUpperCase()}
             </div>
             <div>
-               <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-none">Session</div>
-               <div className="text-[13px] text-white font-bold mt-1 truncate leading-none tracking-wide">{adminName}</div>
+               <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider leading-none">Console User</div>
+               <div className="text-[12px] text-slate-800 font-bold mt-0.5 truncate max-w-[150px] leading-none tracking-wide">{adminName}</div>
             </div>
           </div>
           <form action={logout}>
             <motion.button 
-              whileHover={{ scale: 1.02 }}
+              whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
               type="submit" 
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-[12px] font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition-colors uppercase tracking-widest"
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-[11px] font-bold text-red-600 bg-red-50 hover:bg-red-100/70 border border-red-200/50 transition-all uppercase tracking-wider cursor-pointer"
             >
-              <i className="fa-solid fa-arrow-right-from-bracket"></i> Terminate
+              <i className="fa-solid fa-arrow-right-from-bracket"></i> Terminate Session
             </motion.button>
           </form>
         </div>

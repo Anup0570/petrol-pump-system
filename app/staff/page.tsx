@@ -70,23 +70,23 @@ export default async function StaffPage() {
   const staffNames = staffList?.map(s => s.name) || []
 
   return (
-    <div className="min-h-screen bg-[#060813]">
-      {/* Top Nav */}
-      <div className="bg-[#070914]/80 backdrop-blur-xl border-b border-white/5 p-4 sticky top-0 z-50">
+    <div className="min-h-screen bg-[#f8fafc]">
+      {/* Top Nav (Clean White Enterprise) */}
+      <div className="bg-white/90 backdrop-blur-md border-b border-slate-200/60 p-4 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#ff6a00] to-[#ff8c00] flex items-center justify-center shadow-lg shadow-[#ff6a00]/25">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#ff6a00] to-[#ff8c00] flex items-center justify-center shadow-sm">
               <i className="fa-solid fa-gas-pump text-white text-sm"></i>
             </div>
-            <span className="font-extrabold text-white text-[18px] tracking-tight">Sai Priya Fuels</span>
+            <span className="font-extrabold text-slate-800 text-[18px] tracking-tight">Sai Priya Fuels</span>
           </div>
-          <div className="flex items-center gap-4 bg-slate-900 border border-white/5 rounded-2xl p-1.5 pr-2">
-            <span className="text-[13px] font-semibold text-slate-300 pl-2 flex items-center gap-2">
+          <div className="flex items-center gap-4 bg-slate-50 border border-slate-200/80 rounded-2xl p-1.5 pr-2">
+            <span className="text-[13px] font-semibold text-slate-600 pl-2 flex items-center gap-2">
               <i className="fa-solid fa-clipboard-user text-[#ff6a00]"></i>
               {profile?.name || user.email}
             </span>
             <form action={logout}>
-              <button type="submit" className="bg-slate-800 hover:bg-red-500/20 border border-white/10 hover:border-red-500/30 text-slate-300 hover:text-red-400 px-3 py-1.5 rounded-xl cursor-pointer text-[12px] font-bold transition-all shadow-sm">
+              <button type="submit" className="bg-white hover:bg-red-50 border border-slate-200 hover:border-red-200 text-slate-500 hover:text-red-600 px-3 py-1.5 rounded-xl cursor-pointer text-[12px] font-bold transition-all shadow-sm">
                 <i className="fa-solid fa-arrow-right-from-bracket"></i>
               </button>
             </form>
@@ -97,8 +97,8 @@ export default async function StaffPage() {
       <div className="max-w-7xl mx-auto p-6">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Shift Handover Console</h1>
-          <p className="text-sm mt-1.5 text-slate-400 font-medium leading-relaxed">
+          <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">Shift Handover Console</h1>
+          <p className="text-sm mt-1.5 text-slate-500 font-medium leading-relaxed">
             Record digital transactions, verify physical currency notes, and resolve discrepancies before initiating ledger commit protocols.
           </p>
         </div>

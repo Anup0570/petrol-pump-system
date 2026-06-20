@@ -1,27 +1,22 @@
 import { Variants, TargetAndTransition } from "framer-motion";
 
-// Custom premium easing curve (matching Linear & Apple)
+// Custom premium easing curve for clean, professional SaaS layouts
 export const smoothEase = [0.16, 1, 0.3, 1] as const;
-export const elasticSpring = { type: "spring" as const, stiffness: 220, damping: 22 };
-export const superElasticSpring = { type: "spring" as const, stiffness: 400, damping: 20 };
+export const standardTransition = { type: "tween" as const, ease: smoothEase, duration: 0.5 };
+export const springTransition = { type: "spring" as const, stiffness: 260, damping: 26 };
 
-// Page transition: cinematic fade in + upward reveal + blur to sharp
+// Simple, smooth page load reveal
 export const pageFadeIn: Variants = {
-  hidden: { opacity: 0, y: 15, filter: "blur(12px)" },
+  hidden: { opacity: 0, y: 10 },
   show: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
-    transition: {
-      duration: 0.9,
-      ease: smoothEase,
-    },
+    transition: standardTransition,
   },
   exit: { 
     opacity: 0, 
-    y: -10,
-    filter: "blur(8px)", 
-    transition: { duration: 0.35, ease: "easeIn" } 
+    y: -8,
+    transition: { duration: 0.2, ease: "easeIn" } 
   },
 };
 
@@ -31,108 +26,93 @@ export const containerVariants: Variants = {
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.06,
-      delayChildren: 0.05,
+      staggerChildren: 0.05,
+      delayChildren: 0.02,
     },
   },
 };
 
-// Stagger child entrance
+// Clean stagger child item reveal
 export const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 24, filter: "blur(6px)" },
+  hidden: { opacity: 0, y: 12 },
   show: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
-    transition: elasticSpring,
+    transition: springTransition,
   },
 };
 
-// Table row specific stagger entries
+// Table row slide reveals
 export const rowVariants: Variants = {
-  hidden: { opacity: 0, x: -15 },
+  hidden: { opacity: 0, x: -8 },
   show: {
     opacity: 1,
     x: 0,
-    transition: {
-      type: "spring" as const,
-      stiffness: 280,
-      damping: 24
-    }
+    transition: springTransition,
   }
 };
 
-// Slide items in from right/left
+// Slider indicators
 export const slideInRight: Variants = {
-  hidden: { opacity: 0, x: 30, filter: "blur(4px)" },
+  hidden: { opacity: 0, x: 20 },
   show: {
     opacity: 1,
     x: 0,
-    filter: "blur(0px)",
-    transition: {
-      type: "spring" as const,
-      stiffness: 260,
-      damping: 24
-    },
+    transition: springTransition,
   },
 };
 
-// Fuel tank fluid level rise (with spring bounce)
+// Fuel tank fluid fill animation
 export const liquidFillVariants: Variants = {
   hidden: { height: "0%" },
   show: (custom: number): TargetAndTransition => ({
     height: `${custom}%`,
     transition: {
       type: "spring",
-      stiffness: 35,
-      damping: 10,
-      delay: 0.3,
+      stiffness: 40,
+      damping: 12,
+      delay: 0.25,
     },
   }),
 };
 
-// Premium magnetic card hover (with visual elevation)
+// Subtle, professional card lift
 export const magneticHover: TargetAndTransition = {
-  scale: 1.025,
-  y: -5,
-  boxShadow: "0 25px 45px rgba(0, 0, 0, 0.45), 0 0 35px rgba(255, 106, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.08)",
-  transition: superElasticSpring,
+  y: -3,
+  boxShadow: "0 10px 25px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.02)",
+  transition: { type: "spring", stiffness: 300, damping: 25 },
 };
 
-// Subtle magnetic button hover
+// Professional button hover highlight
 export const buttonHover: TargetAndTransition = {
-  scale: 1.03,
-  y: -2,
-  boxShadow: "0 10px 20px rgba(255, 106, 0, 0.35)",
-  transition: superElasticSpring,
+  scale: 1.015,
+  boxShadow: "0 6px 16px rgba(255, 106, 0, 0.22)",
+  transition: { type: "spring", stiffness: 400, damping: 22 },
 };
 
 // Modal/Popup scale + fade in (with elastic bounce)
 export const modalVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.94, filter: "blur(8px)" },
+  hidden: { opacity: 0, scale: 0.96 },
   show: {
     opacity: 1,
     scale: 1,
-    filter: "blur(0px)",
     transition: {
       type: "spring" as const,
       stiffness: 300,
-      damping: 26,
+      damping: 24,
     }
   },
   exit: {
     opacity: 0,
-    scale: 0.96,
-    filter: "blur(4px)",
-    transition: { duration: 0.25, ease: "easeInOut" }
+    scale: 0.98,
+    transition: { duration: 0.15, ease: "easeInOut" }
   }
 };
 
-// Idle ambient breathing/pulse
+// Minimal background breathing/pulse
 export const ambientPulse: Variants = {
   animate: {
-    scale: [1, 1.015, 1],
-    opacity: [0.85, 1, 0.85],
+    opacity: [0.9, 1, 0.9],
     transition: {
       duration: 3,
       ease: "easeInOut",
@@ -141,13 +121,12 @@ export const ambientPulse: Variants = {
   },
 };
 
-// Idle ambient floating movement
+// Subtle icon rotation/float for key highlights
 export const floatMotion: Variants = {
   animate: {
-    y: [0, -10, 0],
-    rotate: [0, 1.5, 0],
+    y: [0, -4, 0],
     transition: {
-      duration: 5,
+      duration: 4,
       ease: "easeInOut",
       repeat: Infinity,
     },
