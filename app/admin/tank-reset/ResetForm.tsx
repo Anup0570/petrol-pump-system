@@ -44,38 +44,38 @@ export default function ResetForm({ adminName, petrolStock, dieselStock, petrolC
 
   return (
     <div className="glass-panel" style={{ maxWidth: '600px' }}>
-      {error && <div className="mb-4 p-3 rounded" style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }}>{error}</div>}
-      {success && <div className="mb-4 p-3 rounded" style={{ background: 'rgba(52,211,153,0.1)', color: '#34d399', border: '1px solid rgba(52,211,153,0.2)' }}>{success}</div>}
+      {error && <div className="mb-4 p-3 rounded text-sm" style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }}>{error}</div>}
+      {success && <div className="mb-4 p-3 rounded text-sm" style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981', border: '1px solid rgba(16,185,129,0.2)' }}>{success}</div>}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
           <div>
             <div className="flex justify-between items-center mb-1">
-              <label className="block text-sm font-medium text-slate-400">Petrol Tank Current Stock (Litres)</label>
-              <span className="text-xs text-slate-500">Capacity: {petrolCapacity.toLocaleString()} L</span>
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Petrol Tank Current Stock (Litres)</label>
+              <span className="text-xs text-slate-400 font-medium">Capacity: {petrolCapacity.toLocaleString()} L</span>
             </div>
-            <input type="number" step="0.01" name="petrolStock" defaultValue={petrolStock} required className="w-full bg-slate-800/80 border border-slate-700/50 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500 shadow-sm" />
+            <input type="number" step="0.01" name="petrolStock" defaultValue={petrolStock} required className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-800 outline-none focus:border-[#ff6a00] focus:ring-1 focus:ring-[#ff6a00] shadow-sm" />
           </div>
 
           <div>
             <div className="flex justify-between items-center mb-1">
-              <label className="block text-sm font-medium text-slate-400">Diesel Tank Current Stock (Litres)</label>
-              <span className="text-xs text-slate-500">Capacity: {dieselCapacity.toLocaleString()} L</span>
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Diesel Tank Current Stock (Litres)</label>
+              <span className="text-xs text-slate-400 font-medium">Capacity: {dieselCapacity.toLocaleString()} L</span>
             </div>
-            <input type="number" step="0.01" name="dieselStock" defaultValue={dieselStock} required className="w-full bg-slate-800/80 border border-slate-700/50 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500 shadow-sm" />
+            <input type="number" step="0.01" name="dieselStock" defaultValue={dieselStock} required className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-800 outline-none focus:border-[#ff6a00] focus:ring-1 focus:ring-[#ff6a00] shadow-sm" />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-1">Reason for Correction (Optional)</label>
-            <textarea name="reason" rows={2} className="w-full bg-slate-800/80 border border-slate-700/50 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500 shadow-sm placeholder-slate-600" placeholder="e.g., Fixing incorrect delivery entry"></textarea>
+            <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Reason for Correction (Optional)</label>
+            <textarea name="reason" rows={2} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-800 outline-none focus:border-[#ff6a00] focus:ring-1 focus:ring-[#ff6a00] shadow-sm placeholder-slate-400" placeholder="e.g., Fixing incorrect delivery entry"></textarea>
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-700">
-          <button type="button" onClick={() => window.location.href='/admin/dashboard'} style={{ padding: '8px 16px', background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: '8px', cursor: 'pointer' }}>
+        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-200">
+          <button type="button" onClick={() => window.location.href='/admin/dashboard'} className="px-4 py-2 bg-white text-slate-600 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer text-sm font-semibold">
             Cancel
           </button>
-          <button type="submit" disabled={loading} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}>
+          <button type="submit" disabled={loading} className="px-4 py-2 bg-[#ef4444] text-white border-none rounded-xl cursor-pointer hover:bg-red-600 transition-colors text-sm font-semibold shadow-sm" style={{ opacity: loading ? 0.7 : 1 }}>
             {loading ? 'Updating...' : 'Update Tank Stock'}
           </button>
         </div>

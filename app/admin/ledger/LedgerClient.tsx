@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { format } from 'date-fns'
 import type { CreditLedgerEntry } from '@/lib/types'
+import { motion, AnimatePresence } from 'framer-motion'
+import { buttonHover, modalVariants } from '@/lib/motion'
 
 export default function LedgerClient({ initialEntries }: { initialEntries: CreditLedgerEntry[] }) {
   const [entries, setEntries] = useState<CreditLedgerEntry[]>(initialEntries)
@@ -62,137 +64,216 @@ export default function LedgerClient({ initialEntries }: { initialEntries: Credi
 
   return (
     <div>
-      {/* Summary + Add */}
+      {/* Summary + Add Actions Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="glass-panel" style={{ gridColumn: 'span 2', display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <i className="fa-solid fa-book-open" style={{ color: '#f87171', fontSize: '20px' }}></i>
+        <div className="glass-panel bg-white border border-slate-200 shadow-sm p-6 rounded-2xl flex items-center gap-4 md:col-span-2">
+          <div className="w-12 h-12 rounded-xl bg-red-50 border border-red-100 flex items-center justify-center shrink-0">
+            <i className="fa-solid fa-book-open text-[#dc2626] text-xl"></i>
           </div>
           <div>
-            <div className="text-2xl font-bold text-slate-800">₹{totalOutstanding.toLocaleString('en-IN')}</div>
-            <div style={{ color: '#64748b', fontSize: '13px' }}>Total Outstanding ({entries.filter(e => e.status === 'Pending').length} accounts)</div>
+            <div className="text-2xl font-black text-slate-800">₹{totalOutstanding.toLocaleString('en-IN')}</div>
+            <div className="text-xs text-slate-500 font-medium">Total Outstanding Ledger ({entries.filter(e => e.status === 'Pending').length} pending accounts)</div>
           </div>
         </div>
-        <div className="glass-panel flex items-center justify-center">
-          <button onClick={() => setShowAdd(true)}
-            style={{ background: 'linear-gradient(135deg, #2563eb, #7c3aed)', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>
-            <i className="fa-solid fa-plus mr-2"></i>Add Credit Entry
-          </button>
+        <div className="glass-panel bg-white border border-slate-200 shadow-sm p-6 rounded-2xl flex items-center justify-center">
+          <motion.button 
+            whileHover={buttonHover}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setShowAdd(true)}
+            className="btn-primary w-full py-3 text-sm font-bold shadow-sm cursor-pointer"
+          >
+            <i className="fa-solid fa-plus mr-1.5"></i>Add Credit Record
+          </motion.button>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="glass-panel mb-4" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-        <div style={{ flex: '1 1 200px' }}>
-          <label className="block text-xs mb-1" style={{ color: '#94a3b8' }}>Search Customer / Vehicle</label>
-          <input placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} />
+      <div className="glass-panel mb-6 bg-white border border-slate-200 shadow-sm p-6 rounded-2xl flex flex-wrap gap-4 items-end">
+        <div className="flex-1 min-w-[200px]">
+          <label className="block text-[10px] font-bold mb-2 text-slate-400 uppercase tracking-widest">Search Customer / License Plate</label>
+          <input 
+            placeholder="Search customer, vehicle number..." 
+            value={search} 
+            onChange={e => setSearch(e.target.value)} 
+            className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl focus:border-[#ff6a00]"
+          />
         </div>
-        <div style={{ flex: '0 0 160px' }}>
-          <label className="block text-xs mb-1" style={{ color: '#94a3b8' }}>Status</label>
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
-            <option value="">All</option>
+        <div className="w-[180px]">
+          <label className="block text-[10px] font-bold mb-2 text-slate-400 uppercase tracking-widest">Payment Status</label>
+          <select 
+            value={statusFilter} 
+            onChange={e => setStatusFilter(e.target.value)}
+            className="w-full cursor-pointer bg-white border border-slate-200 text-slate-800 rounded-xl focus:border-[#ff6a00]"
+          >
+            <option value="">All Accounts</option>
             <option value="Pending">Pending</option>
             <option value="Paid">Paid</option>
           </select>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="glass-panel overflow-x-auto">
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-          <thead>
-            <tr style={{ borderBottom: '1px solid #334155' }}>
-              {['Date', 'Customer', 'Vehicle', 'Fuel', 'Litres', 'Amount', 'Notes', 'Status', 'Actions'].map(h => (
-                <th key={h} style={{ padding: '10px 12px', textAlign: 'left', color: '#64748b', fontWeight: 500 }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.length === 0 ? (
-              <tr><td colSpan={9} style={{ padding: '32px', textAlign: 'center', color: '#4b5563' }}>No credit entries found</td></tr>
-            ) : filtered.map(entry => (
-              <tr key={entry.id} style={{ borderBottom: '1px solid #1e293b' }}>
-                <td style={{ padding: '10px 12px', color: '#94a3b8', whiteSpace: 'nowrap' }}>{format(new Date(entry.created_at), 'dd MMM yy')}</td>
-                <td style={{ padding: '10px 12px', color: '#e2e8f0', fontWeight: 500 }}>{entry.customer_name}</td>
-                <td style={{ padding: '10px 12px', color: '#94a3b8' }}>{entry.vehicle_number || '—'}</td>
-                <td style={{ padding: '10px 12px' }}>
-                  {entry.fuel_type ? <span className={`badge ${entry.fuel_type === 'Petrol' ? 'petrol-badge' : 'diesel-badge'}`}>{entry.fuel_type}</span> : '—'}
-                </td>
-                <td style={{ padding: '10px 12px', color: '#94a3b8' }}>{entry.litres ? `${entry.litres}L` : '—'}</td>
-                <td style={{ padding: '10px 12px', color: '#f87171', fontWeight: 700 }}>₹{entry.amount.toLocaleString()}</td>
-                <td style={{ padding: '10px 12px', color: '#64748b', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.notes || '—'}</td>
-                <td style={{ padding: '10px 12px' }}>
-                  <span className={`badge ${entry.status === 'Paid' ? 'status-verified' : 'status-pending'}`}>{entry.status}</span>
-                  {entry.status === 'Paid' && entry.paid_at && (
-                    <div style={{ fontSize: '11px', color: '#4b5563', marginTop: '2px' }}>{format(new Date(entry.paid_at), 'dd MMM')}</div>
-                  )}
-                </td>
-                <td style={{ padding: '10px 12px' }}>
-                  <div className="flex gap-2">
-                    {entry.status === 'Pending' && (
-                      <button onClick={() => markPaid(entry.id)}
-                        style={{ padding: '5px 10px', background: 'rgba(16,185,129,0.15)', color: '#34d399', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', whiteSpace: 'nowrap' }}>
-                        <i className="fa-solid fa-check mr-1"></i>Mark Paid
-                      </button>
-                    )}
-                    <button onClick={() => deleteEntry(entry.id)}
-                      style={{ padding: '5px 10px', background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>
-                      <i className="fa-solid fa-trash"></i>
-                    </button>
-                  </div>
-                </td>
+      {/* Credit Ledger Table */}
+      <div className="glass-panel bg-white border border-slate-200 shadow-sm p-6 rounded-2xl overflow-x-auto">
+        <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+          <table className="w-full text-[13px] border-collapse">
+            <thead>
+              <tr className="border-b border-slate-200 bg-slate-50">
+                {['Date', 'Customer Account', 'Vehicle ID', 'Fuel Type', 'Volume', 'Outstanding', 'Justification Notes', 'Account Status', 'Manage'].map(h => (
+                  <th key={h} className="px-4 py-3.5 text-left text-slate-500 font-bold uppercase tracking-wider text-[9px] whitespace-nowrap">{h}</th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filtered.length === 0 ? (
+                <tr><td colSpan={9} className="p-8 text-center text-slate-400 font-medium">No credit accounts found.</td></tr>
+              ) : filtered.map(entry => (
+                <tr key={entry.id} className="enhanced-row">
+                  <td className="px-4 py-4 text-slate-500 whitespace-nowrap">{format(new Date(entry.created_at), 'dd MMM yy')}</td>
+                  <td className="px-4 py-4 text-slate-800 font-bold whitespace-nowrap">{entry.customer_name}</td>
+                  <td className="px-4 py-4 text-slate-600 font-semibold whitespace-nowrap">{entry.vehicle_number || '—'}</td>
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    {entry.fuel_type ? <span className={`badge ${entry.fuel_type === 'Petrol' ? 'petrol-badge' : 'diesel-badge'}`}>{entry.fuel_type}</span> : '—'}
+                  </td>
+                  <td className="px-4 py-4 text-slate-600 whitespace-nowrap">{entry.litres ? `${entry.litres} L` : '—'}</td>
+                  <td className="px-4 py-4 text-red-600 font-black whitespace-nowrap">₹{entry.amount.toLocaleString('en-IN')}</td>
+                  <td className="px-4 py-4 text-slate-500 max-w-[150px] overflow-hidden text-overflow-ellipsis whitespace-nowrap">{entry.notes || '—'}</td>
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    <span className={`badge ${entry.status === 'Paid' ? 'status-verified' : 'status-pending'}`}>{entry.status}</span>
+                    {entry.status === 'Paid' && entry.paid_at && (
+                      <div className="text-[10px] text-slate-400 mt-1 font-medium">{format(new Date(entry.paid_at), 'dd MMM, HH:mm')}</div>
+                    )}
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    <div className="flex gap-2">
+                      {entry.status === 'Pending' && (
+                        <button 
+                          onClick={() => markPaid(entry.id)}
+                          className="px-3 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg cursor-pointer text-xs font-bold transition-all"
+                        >
+                          <i className="fa-solid fa-check mr-1"></i>Mark Paid
+                        </button>
+                      )}
+                      <button 
+                        onClick={() => deleteEntry(entry.id)}
+                        className="px-3 py-1 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg cursor-pointer text-xs font-bold transition-all"
+                      >
+                        <i className="fa-solid fa-trash-can"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Add Modal */}
-      {showAdd && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '16px' }}>
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '420px', padding: '28px' }}>
-            <h3 className="font-bold text-slate-800 mb-5 text-lg">
-              <i className="fa-solid fa-plus mr-2" style={{ color: '#60a5fa' }}></i>Add Credit Entry
-            </h3>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs mb-1" style={{ color: '#94a3b8' }}>Customer Name *</label>
-                <input value={form.customer_name} onChange={e => setForm(f => ({ ...f, customer_name: e.target.value }))} placeholder="Name" />
-              </div>
-              <div>
-                <label className="block text-xs mb-1" style={{ color: '#94a3b8' }}>Vehicle Number</label>
-                <input value={form.vehicle_number} onChange={e => setForm(f => ({ ...f, vehicle_number: e.target.value }))} placeholder="e.g. MH12AB1234" />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
+      <AnimatePresence>
+        {showAdd && (
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <motion.div 
+              variants={modalVariants}
+              initial="hidden"
+              animate="show"
+              exit="exit"
+              className="glass-panel w-full max-w-[420px] bg-white border border-slate-200 shadow-2xl relative overflow-hidden p-8 rounded-2xl"
+            >
+              {/* Top brand line indicator */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-[#ff6a00]"></div>
+
+              <h3 className="font-extrabold text-slate-800 mb-6 text-xl tracking-tight flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-orange-50 flex items-center justify-center border border-orange-100">
+                  <i className="fa-solid fa-book-open text-[#ff6a00]"></i>
+                </div>
+                Add Credit Entry
+              </h3>
+
+              <div className="space-y-4">
                 <div>
-                  <label className="block text-xs mb-1" style={{ color: '#94a3b8' }}>Fuel Type</label>
-                  <select value={form.fuel_type} onChange={e => setForm(f => ({ ...f, fuel_type: e.target.value }))}>
-                    <option>Petrol</option><option>Diesel</option><option>2T Oil</option>
-                  </select>
+                  <label className="block text-[10px] font-bold mb-2 text-slate-400 uppercase tracking-widest">Customer Name *</label>
+                  <input 
+                    value={form.customer_name} 
+                    onChange={e => setForm(f => ({ ...f, customer_name: e.target.value }))} 
+                    placeholder="e.g. SRS Travels" 
+                    className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl focus:border-[#ff6a00]"
+                  />
                 </div>
                 <div>
-                  <label className="block text-xs mb-1" style={{ color: '#94a3b8' }}>Litres</label>
-                  <input type="number" value={form.litres} onChange={e => setForm(f => ({ ...f, litres: e.target.value }))} placeholder="0" />
+                  <label className="block text-[10px] font-bold mb-2 text-slate-400 uppercase tracking-widest">Vehicle Number</label>
+                  <input 
+                    value={form.vehicle_number} 
+                    onChange={e => setForm(f => ({ ...f, vehicle_number: e.target.value }))} 
+                    placeholder="e.g. KA01HX1234" 
+                    className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl focus:border-[#ff6a00]"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-bold mb-2 text-slate-400 uppercase tracking-widest">Fuel Type</label>
+                    <select 
+                      value={form.fuel_type} 
+                      onChange={e => setForm(f => ({ ...f, fuel_type: e.target.value }))}
+                      className="w-full cursor-pointer bg-white border border-slate-200 text-slate-800 rounded-xl focus:border-[#ff6a00]"
+                    >
+                      <option>Petrol</option><option>Diesel</option><option>2T Oil</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold mb-2 text-slate-400 uppercase tracking-widest">Litres</label>
+                    <input 
+                      type="number" 
+                      value={form.litres} 
+                      onChange={e => setForm(f => ({ ...f, litres: e.target.value }))} 
+                      placeholder="0.0" 
+                      className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl focus:border-[#ff6a00]"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold mb-2 text-slate-400 uppercase tracking-widest">Amount (₹) *</label>
+                  <input 
+                    type="number" 
+                    value={form.amount} 
+                    onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} 
+                    placeholder="0.00" 
+                    className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl focus:border-[#ff6a00]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold mb-2 text-slate-400 uppercase tracking-widest">Notes / Explanations</label>
+                  <input 
+                    value={form.notes} 
+                    onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} 
+                    placeholder="e.g. Authorized by Shift Head Manager" 
+                    className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl focus:border-[#ff6a00]"
+                  />
                 </div>
               </div>
-              <div>
-                <label className="block text-xs mb-1" style={{ color: '#94a3b8' }}>Amount (₹) *</label>
-                <input type="number" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} placeholder="0.00" />
+
+              <div className="flex gap-4 mt-8">
+                <motion.button 
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowAdd(false)} 
+                  className="btn-secondary flex-1 py-3 text-slate-600 font-bold text-sm cursor-pointer"
+                >
+                  Cancel
+                </motion.button>
+                <motion.button 
+                  whileHover={!saving ? buttonHover : {}}
+                  whileTap={!saving ? { scale: 0.98 } : {}}
+                  onClick={addEntry} 
+                  disabled={saving} 
+                  className="btn-primary flex-1 py-3 text-sm font-bold cursor-pointer disabled:opacity-50"
+                >
+                  {saving ? 'Saving...' : 'Add Account'}
+                </motion.button>
               </div>
-              <div>
-                <label className="block text-xs mb-1" style={{ color: '#94a3b8' }}>Notes</label>
-                <input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Optional notes..." />
-              </div>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <button onClick={() => setShowAdd(false)} style={{ flex: 1, padding: '10px', background: '#334155', color: '#94a3b8', border: 'none', borderRadius: '10px', cursor: 'pointer' }}>Cancel</button>
-              <button onClick={addEntry} disabled={saving} style={{ flex: 1, padding: '10px', background: 'linear-gradient(135deg, #2563eb, #7c3aed)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 600 }}>
-                {saving ? 'Saving...' : 'Add Entry'}
-              </button>
-            </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   )
 }

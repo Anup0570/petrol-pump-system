@@ -45,12 +45,12 @@ export default async function DashboardPage() {
 
   // Elite palette tuning for the KPI cards
   const kpis = [
-    { label: "Today's Gross Sales", value: `₹${totalGross.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`, icon: 'fa-indian-rupee-sign', color: '#3b82f6' },
+    { label: "Today's Gross Sales", value: `₹${totalGross.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`, icon: 'fa-indian-rupee-sign', color: '#ff6a00' },
     { label: 'Cash Collected', value: `₹${totalCash.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`, icon: 'fa-money-bills', color: '#10b981' },
-    { label: 'UPI / GPay', value: `₹${totalUPI.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`, icon: 'fa-mobile-screen-button', color: '#6366f1' },
-    { label: 'Card Payments', value: `₹${totalCard.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`, icon: 'fa-credit-card', color: '#8b5cf6' },
-    { label: 'Petrol Sold', value: `${totalPetrol.toFixed(1)} L`, icon: 'fa-gas-pump', color: '#f97316' },
-    { label: 'Diesel Sold', value: `${totalDiesel.toFixed(1)} L`, icon: 'fa-gas-pump', color: '#0ea5e9' },
+    { label: 'UPI / GPay', value: `₹${totalUPI.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`, icon: 'fa-mobile-screen-button', color: '#0ea5e9' },
+    { label: 'Card Payments', value: `₹${totalCard.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`, icon: 'fa-credit-card', color: '#7e22ce' },
+    { label: 'Petrol Sold', value: `${totalPetrol.toFixed(1)} L`, icon: 'fa-gas-pump', color: '#ff6a00' },
+    { label: 'Diesel Sold', value: `${totalDiesel.toFixed(1)} L`, icon: 'fa-gas-pump', color: '#005b9e' },
     { label: 'Credit Given', value: `₹${totalCredit.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`, icon: 'fa-book-open', color: '#ef4444' },
     { label: 'Pending Verifications', value: String(pendingCount), icon: 'fa-clock', color: '#f59e0b' },
   ]
@@ -59,8 +59,8 @@ export default async function DashboardPage() {
     <PageWrapper>
       <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Main Command Center</h1>
-          <p className="text-sm mt-1 text-zinc-500 font-medium tracking-wide uppercase">
+          <h1 className="text-3xl font-black text-slate-800 tracking-tight">Main Command Center</h1>
+          <p className="text-xs mt-1.5 text-slate-500 font-bold tracking-wider uppercase">
             {format(new Date(), "EEEE, d MMMM yyyy")} • Live Metrics
           </p>
         </div>
@@ -96,15 +96,14 @@ export default async function DashboardPage() {
 
         {/* Recent Shifts Table */}
         <StaggerContainer>
-          <StaggerItem className="glass-panel p-8 relative overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="font-bold text-white flex items-center gap-3 text-xl tracking-tight">
-                <i className="fa-solid fa-table-list text-blue-500"></i>
+          <StaggerItem className="glass-panel p-6 relative bg-white border border-slate-200/80 shadow-sm rounded-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-extrabold text-slate-800 flex items-center gap-3 text-lg tracking-tight">
+                <i className="fa-solid fa-table-list text-[#ff6a00]"></i>
                 Terminal Activity
               </h3>
-              <a href="/admin/entries" className="text-[13px] text-zinc-400 font-semibold hover:text-white hover:bg-white/5 px-4 py-2 rounded-lg transition-all border border-transparent hover:border-white/10 tracking-widest uppercase">
-                Browse Complete Ledger <i className="fa-solid fa-arrow-right ml-2 opacity-50"></i>
+              <a href="/admin/entries" className="text-[11px] text-slate-500 font-bold hover:text-slate-900 bg-white border border-slate-200/80 hover:bg-slate-50 px-4 py-2 rounded-xl transition-all shadow-sm tracking-wider uppercase">
+                Browse Complete Ledger <i className="fa-solid fa-arrow-right ml-1.5 opacity-70"></i>
               </a>
             </div>
             <RecentShiftsTable recentEntries={recentEntries || []} />
@@ -117,7 +116,7 @@ export default async function DashboardPage() {
         {/* Section 1 - Key Metrics */}
         <StaggerContainer>
           <div className="flex items-center justify-between mb-4 px-2">
-            <h2 className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Key Metrics</h2>
+            <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Key Metrics</h2>
           </div>
           <div className="flex flex-col gap-4">
             {kpis.map(kpi => (
@@ -130,7 +129,7 @@ export default async function DashboardPage() {
 
         {/* Section 2 - Fuel Tank Status */}
         <StaggerContainer>
-          <h2 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4 px-2 mt-4">Reserves</h2>
+          <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-2 mt-4">Reserves</h2>
           <div className="grid grid-cols-1 gap-4">
             <StaggerItem>
               <TankCardClient label="Petrol Reserve" fuelType="petrol" current={petrolTank.current_stock} capacity={petrolTank.capacity} />
@@ -151,11 +150,11 @@ export default async function DashboardPage() {
         {/* Section 4 - Recent Shifts */}
         <StaggerContainer>
           <div className="flex items-center justify-between mb-4 px-2 mt-4">
-            <h2 className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Recent Activity</h2>
+            <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Recent Activity</h2>
           </div>
           <div className="space-y-4">
             {(recentEntries || []).length === 0 ? (
-              <div className="glass-panel text-center text-zinc-500 text-sm py-8 border-dashed border-zinc-700 font-medium">No system activity detected.</div>
+              <div className="glass-panel text-center text-slate-500 text-sm py-8 border-dashed border-slate-300 bg-white font-medium shadow-sm">No system activity detected.</div>
             ) : (recentEntries || []).map((entry: any) => (
               <StaggerItem key={entry.id}>
                 <MobileShiftCard entry={entry} />
@@ -163,7 +162,7 @@ export default async function DashboardPage() {
             ))}
           </div>
           <div className="mt-6 text-center">
-            <a href="/admin/entries" className="inline-block text-sm font-semibold text-white bg-zinc-900 py-4 px-6 rounded-xl w-full text-center border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.4)] hover:bg-zinc-800 hover:shadow-lg transition-all tracking-widest uppercase">Browse All Intelligence</a>
+            <a href="/admin/entries" className="inline-block text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 py-3.5 px-6 rounded-xl w-full text-center border border-slate-200 shadow-sm transition-all tracking-wider uppercase">Browse All Intelligence</a>
           </div>
         </StaggerContainer>
       </div>
@@ -173,39 +172,39 @@ export default async function DashboardPage() {
 
 function RecentShiftsTable({ recentEntries }: { recentEntries: any[] }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-white/5 bg-zinc-900/40 backdrop-blur-md shadow-inner">
+    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
       <table className="w-full text-[13px]">
         <thead>
-          <tr className="border-b border-white/5 bg-black/20">
+          <tr className="border-b border-slate-200 bg-slate-50">
             {['Timestamp', 'Operator', 'Type', 'Gross (₹)', 'Est. Cash (₹)', 'Petrol (L)', 'Diesel (L)', 'Discrepancy', 'Status', 'Manage'].map((h, index) => (
-              <th key={index} className="px-5 py-4 text-left text-zinc-500 font-bold uppercase tracking-widest whitespace-nowrap text-[11px]">{h}</th>
+              <th key={index} className="px-5 py-3.5 text-left text-slate-500 font-bold uppercase tracking-wider text-[9px]">{h}</th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-white/5">
+        <tbody className="divide-y divide-slate-100">
           {(recentEntries || []).length === 0 ? (
-            <tr><td colSpan={10} className="p-10 text-center text-zinc-500 font-medium">No intelligence logs found.</td></tr>
+            <tr><td colSpan={10} className="p-10 text-center text-slate-500 font-medium">No shift logs found.</td></tr>
           ) : (recentEntries || []).map((entry: any) => {
             const diff = entry.difference || 0
             return (
               <tr key={entry.id} className="enhanced-row">
-                <td className="px-5 py-4 text-zinc-300 font-medium whitespace-nowrap">{format(new Date(entry.created_at), 'dd MMM, HH:mm')}</td>
-                <td className="px-5 py-4 text-zinc-400 font-semibold whitespace-nowrap flex items-center gap-2">
-                  <div className="w-6 h-6 rounded bg-zinc-800 border border-white/10 flex items-center justify-center text-[10px] text-white">
+                <td className="px-5 py-4 text-slate-600 font-medium whitespace-nowrap">{format(new Date(entry.created_at), 'dd MMM, HH:mm')}</td>
+                <td className="px-5 py-4 text-slate-700 font-semibold whitespace-nowrap flex items-center gap-2">
+                  <div className="w-6 h-6 rounded bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] text-slate-600 font-bold">
                     {entry.staff_name.charAt(0).toUpperCase()}
                   </div>
                   {entry.staff_name}
                 </td>
-                <td className="px-5 py-4 text-zinc-500 font-medium whitespace-nowrap">{entry.shift_type}</td>
-                <td className="px-5 py-4 text-white font-semibold whitespace-nowrap tracking-tight">₹{(entry.gross_sales || 0).toLocaleString()}</td>
-                <td className="px-5 py-4 text-white font-semibold whitespace-nowrap tracking-tight">₹{(entry.expected_cash || 0).toLocaleString()}</td>
-                <td className="px-5 py-4 text-orange-400 font-bold whitespace-nowrap">{(entry.petrol_litres || 0).toFixed(1)}</td>
-                <td className="px-5 py-4 text-sky-400 font-bold whitespace-nowrap">{(entry.diesel_litres || 0).toFixed(1)}</td>
-                <td className={`px-5 py-4 font-bold whitespace-nowrap tracking-tight ${diff > 0 ? 'text-blue-500' : diff < 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                <td className="px-5 py-4 text-slate-500 font-medium whitespace-nowrap">{entry.shift_type?.replace(' Shift', '')}</td>
+                <td className="px-5 py-4 text-slate-800 font-semibold whitespace-nowrap tracking-tight">₹{(entry.gross_sales || 0).toLocaleString()}</td>
+                <td className="px-5 py-4 text-slate-800 font-semibold whitespace-nowrap tracking-tight">₹{(entry.expected_cash || 0).toLocaleString()}</td>
+                <td className="px-5 py-4 text-[#cc5200] font-bold whitespace-nowrap">{(entry.petrol_litres || 0).toFixed(1)}</td>
+                <td className="px-5 py-4 text-slate-700 font-bold whitespace-nowrap">{(entry.diesel_litres || 0).toFixed(1)}</td>
+                <td className={`px-5 py-4 font-bold whitespace-nowrap tracking-tight ${diff > 0 ? 'text-emerald-600' : diff < 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
                   {diff >= 0 ? '+' : ''}₹{diff.toLocaleString()}
                 </td>
                 <td className="px-5 py-4 whitespace-nowrap">
-                  <span className={entry.status === 'Verified' ? 'status-verified badge' : 'status-pending badge'}>
+                  <span className={entry.status === 'Verified' ? 'status-verified badge shadow-sm' : 'status-pending badge shadow-sm'}>
                     {entry.status}
                   </span>
                 </td>
@@ -228,16 +227,16 @@ function RecentShiftsTable({ recentEntries }: { recentEntries: any[] }) {
 function MobileShiftCard({ entry }: { entry: any }) {
   const diff = entry.difference || 0;
   return (
-    <div className="glass-panel p-6 border-l-4 border-l-transparent hover:border-l-blue-500 transition-colors">
+    <div className="glass-panel p-6 border-l-4 border-l-transparent hover:border-l-[#ff6a00] bg-white border-slate-200 shadow-sm transition-colors">
       <div className="flex justify-between items-start mb-5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-zinc-800 border border-white/10 flex items-center justify-center text-sm font-bold text-white shadow-lg">
+          <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-sm font-bold text-slate-700 shadow-sm">
             {entry.staff_name.charAt(0).toUpperCase()}
           </div>
           <div>
-            <div className="font-bold text-white text-[16px] tracking-tight">{entry.staff_name}</div>
-            <div className="text-[11px] font-bold mt-1 text-zinc-500 uppercase tracking-widest">
-              {format(new Date(entry.created_at), 'dd MMM, HH:mm')} • {entry.shift_type}
+            <div className="font-bold text-slate-800 text-[15px] tracking-tight">{entry.staff_name}</div>
+            <div className="text-[10px] font-bold mt-1 text-slate-400 uppercase tracking-widest">
+              {format(new Date(entry.created_at), 'dd MMM, HH:mm')} • {entry.shift_type?.replace(' Shift', '')}
             </div>
           </div>
         </div>
@@ -245,26 +244,26 @@ function MobileShiftCard({ entry }: { entry: any }) {
           {entry.status}
         </span>
       </div>
-      
+
       <div className="grid grid-cols-2 gap-3 mb-5">
-        <div className="bg-zinc-900/80 p-4 rounded-xl border border-white/5 shadow-inner">
-          <div className="text-[10px] font-bold mb-1.5 text-zinc-500 uppercase tracking-widest">Gross Sales</div>
-          <div className="font-extrabold text-white text-lg tracking-tight">₹{(entry.gross_sales || 0).toLocaleString()}</div>
+        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/50 shadow-sm">
+          <div className="text-[9px] font-bold mb-1.5 text-slate-400 uppercase tracking-widest">Gross Sales</div>
+          <div className="font-extrabold text-slate-800 text-base tracking-tight">₹{(entry.gross_sales || 0).toLocaleString()}</div>
         </div>
-        <div className="bg-zinc-900/80 p-4 rounded-xl border border-white/5 shadow-inner">
-          <div className="text-[10px] font-bold mb-1.5 text-zinc-500 uppercase tracking-widest">Exp. Cash</div>
-          <div className="font-extrabold text-white text-lg tracking-tight">₹{(entry.expected_cash || 0).toLocaleString()}</div>
+        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/50 shadow-sm">
+          <div className="text-[9px] font-bold mb-1.5 text-slate-400 uppercase tracking-widest">Exp. Cash</div>
+          <div className="font-extrabold text-slate-800 text-base tracking-tight">₹{(entry.expected_cash || 0).toLocaleString()}</div>
         </div>
       </div>
-      
-      <div className="flex items-center justify-between pt-4 border-t border-white/5">
+
+      <div className="flex items-center justify-between pt-4 border-t border-slate-100">
         <div>
-           <div className="text-[10px] font-bold mb-1 text-zinc-500 uppercase tracking-widest">Discrepancy</div>
-           <div className={`font-black text-xl tracking-tighter ${diff > 0 ? 'text-blue-500' : diff < 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+           <div className="text-[9px] font-bold mb-1 text-slate-400 uppercase tracking-widest">Discrepancy</div>
+           <div className={`font-black text-lg tracking-tight ${diff > 0 ? 'text-emerald-600' : diff < 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
              {diff >= 0 ? '+' : ''}₹{diff.toLocaleString()}
            </div>
         </div>
-        <div className="opacity-80 hover:opacity-100 transition-opacity">
+        <div>
            <DeleteShiftButton shiftId={entry.id} petrolLitres={entry.petrol_litres || 0} dieselLitres={entry.diesel_litres || 0} />
         </div>
       </div>
