@@ -69,6 +69,13 @@ export default async function StaffPage() {
 
   const staffNames = staffList?.map(s => s.name) || []
 
+  // Fetch recent entries of the current operator
+  const { data: recentEntries } = await supabase
+    .from('fuel_entries')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(10)
+
   return (
     <div className="min-h-screen bg-[#f8fafc]">
       {/* Top Nav (Clean White Enterprise) */}
@@ -94,16 +101,12 @@ export default async function StaffPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">Shift Handover Console</h1>
-          <p className="text-sm mt-1.5 text-slate-500 font-medium leading-relaxed">
-            Record digital transactions, verify physical currency notes, and resolve discrepancies before initiating ledger commit protocols.
-          </p>
-        </div>
-
-        <StaffPageClient staffNames={staffNames} initialOpenings={initialOpenings} />
+      <div className="max-w-7xl mx-auto p-4 sm:p-6">
+        <StaffPageClient
+          staffNames={staffNames}
+          initialOpenings={initialOpenings}
+          recentEntries={recentEntries || []}
+        />
       </div>
     </div>
   )
