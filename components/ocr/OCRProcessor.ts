@@ -10,11 +10,11 @@ export interface OCRResult {
 }
 
 /**
- * Reusable Class to process an image and perform OCR using Google ML Kit or Tesseract.js.
+ * Reusable Class to process an image and perform OCR using Google ML Kit, Google Vision Cloud, or Tesseract.js.
  */
 export class OCRProcessor {
   /**
-   * Performs image preprocessing on the canvas and runs local offline OCR.
+   * Performs image preprocessing on the canvas and runs local/remote OCR.
    */
   static async process(
     srcCanvas: HTMLCanvasElement,
@@ -26,7 +26,7 @@ export class OCRProcessor {
     let confidence = 0
     let ocrEngine = 'Tesseract.js'
 
-    // 1. Perform canvas preprocessing (auto-crop, binarization, adaptive threshold, sharpening, noise removal)
+    // 1. Perform canvas preprocessing (auto-crop, adaptive threshold, sharpening, size normalization)
     preprocessImage(srcCanvas, destCanvas, options)
 
     // 2. Perform OCR on preprocessed canvas
@@ -35,28 +35,28 @@ export class OCRProcessor {
 
       if (isNative) {
         // Native Google ML Kit Text Recognition
-        ocrEngine = 'Google ML Kit'
+        ocrEngine = 'Google ML Kit (Native)'
         const nativeResult = await this.runNativeMLKit(destCanvas)
         rawText = nativeResult.text
         confidence = nativeResult.confidence
       } else {
-        // Web development fallback using Tesseract.js
-        ocrEngine = 'Tesseract.js'
-        const tesseractResult = await this.runWebTesseract(destCanvas)
-        rawText = tesseractResult.text
-        confidence = tesseractResult.confidence
+        // Web Platform: Try Google Cloud Vision API first, fallback to client-side Tesseract.js
+        try {
+          ocrEngine = 'Google Vision (Cloud)'
+          const cloudResult = await this.runCloudVisionOCR(destCanvas)
+          rawText = cloudResult.text
+          confidence = cloudResult.confidence
+        } catch (cloudErr) {
+          console.warn('Google Vision Cloud OCR unavailable, falling back to Tesseract.js:', cloudErr)
+          ocrEngine = 'Tesseract.js (Local Fallback)'
+          const tesseractResult = await this.runWebTesseract(destCanvas)
+          rawText = tesseractResult.text
+          confidence = tesseractResult.confidence
+        }
       }
     } catch (err) {
-      console.error('Failed primary OCR engine. Attempting Tesseract fallback...', err)
-      try {
-        ocrEngine = 'Tesseract.js (Fallback)'
-        const tesseractResult = await this.runWebTesseract(destCanvas)
-        rawText = tesseractResult.text
-        confidence = tesseractResult.confidence
-      } catch (fallbackErr) {
-        console.error('All OCR engines failed:', fallbackErr)
-        throw new Error('OCR recognition failure')
-      }
+      console.error('All OCR engines failed:', err)
+      throw new Error('OCR recognition failure')
     }
 
     const endTime = performance.now()
@@ -73,7 +73,7 @@ export class OCRProcessor {
    * Helper to execute Google ML Kit OCR on Capacitor native platforms
    */
   private static async runNativeMLKit(canvas: HTMLCanvasElement): Promise<{ text: string; confidence: number }> {
-    // Dynamic import to prevent bundler errors on unsupported server rendering
+    // Dynamic import to prevent bundler errors on server rendering
     const { Filesystem, Directory } = await import('@capacitor/filesystem')
     const { TextRecognition, Script } = await import('@capacitor-mlkit/text-recognition')
 
@@ -117,7 +117,36 @@ export class OCRProcessor {
   }
 
   /**
-   * Helper to execute Tesseract.js OCR on Web platforms
+   * Helper to execute Google Cloud Vision API OCR via Next.js Server Route on Web
+   */
+  private static async runCloudVisionOCR(canvas: HTMLCanvasElement): Promise<{ text: string; confidence: number }> {
+    const dataUrl = canvas.toDataURL('image/png')
+
+    const response = await fetch('/api/ocr', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ image: dataUrl }),
+    })
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}))
+      throw new Error(errData.error || `HTTP error ${response.status}`)
+    }
+
+    const { text } = await response.json()
+    const detectedModel = this.detectModelHeuristically(text)
+    const confidence = this.estimateConfidence(text, detectedModel)
+
+    return {
+      text,
+      confidence
+    }
+  }
+
+  /**
+   * Helper to execute Tesseract.js OCR on Web platforms (offline development fallback)
    */
   private static async runWebTesseract(canvas: HTMLCanvasElement): Promise<{ text: string; confidence: number }> {
     const dataUrl = canvas.toDataURL('image/png')
@@ -150,7 +179,7 @@ export class OCRProcessor {
   }
 
   /**
-   * Heuristically estimates the confidence score of ML Kit output based on layout matching
+   * Heuristically estimates the confidence score of OCR output based on layout matching
    */
   private static estimateConfidence(text: string, model: 'model1' | 'model2'): number {
     const upperText = text.trim().toUpperCase()

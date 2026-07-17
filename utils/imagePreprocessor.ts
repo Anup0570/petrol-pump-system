@@ -108,22 +108,28 @@ export function autoDetectLcdScreen(srcCanvas: HTMLCanvasElement): { x: number; 
     }
   }
 
-  // Add padding
-  xMin = Math.max(0, xMin - 10)
-  xMax = Math.min(width - 1, xMax + 10)
-  yMin = Math.max(0, yMin - 8)
-  yMax = Math.min(height - 1, yMax + 8)
-
   const detectedW = xMax - xMin
   const detectedH = yMax - yMin
 
+  // Apply a 10% margin inset to exclude the outer plastic frame/bezel
+  const insetX = Math.round(detectedW * 0.10)
+  const insetY = Math.round(detectedH * 0.10)
+
+  xMin = Math.max(0, xMin + insetX)
+  xMax = Math.min(width - 1, xMax - insetX)
+  yMin = Math.max(0, yMin + insetY)
+  yMax = Math.min(height - 1, yMax - insetY)
+
+  const finalW = xMax - xMin
+  const finalH = yMax - yMin
+
   // Check if coordinates represent a reasonable size display
-  const wPercent = (detectedW / width) * 100
-  const hPercent = (detectedH / height) * 100
-  const aspect = detectedW / detectedH
+  const wPercent = (finalW / width) * 100
+  const hPercent = (finalH / height) * 100
+  const aspect = finalW / finalH
 
   // LCD screens are generally landscape rectangles (aspect ratio typically 2.0 to 4.5)
-  if (wPercent >= 25 && hPercent >= 15 && aspect >= 1.5 && aspect <= 5.0) {
+  if (wPercent >= 20 && hPercent >= 10 && aspect >= 1.5 && aspect <= 5.5) {
     return {
       x: Math.round((xMin / width) * 100),
       y: Math.round((yMin / height) * 100),
@@ -157,9 +163,11 @@ export function preprocessImage(
   const cw = Math.max(10, Math.min(srcW - cx, (options.crop.w / 100) * srcW))
   const ch = Math.max(10, Math.min(srcH - cy, (options.crop.h / 100) * srcH))
 
-  // Set destination dimensions scaled up for OCR resolution
-  destCanvas.width = cw * options.scale
-  destCanvas.height = ch * options.scale
+  // Normalize the height to 160px and scale the width accordingly to preserve aspect ratio.
+  // This ensures the digit characters are always at the optimal height for OCR engines.
+  const targetHeight = 160
+  destCanvas.height = targetHeight
+  destCanvas.width = Math.round(targetHeight * (cw / ch))
 
   destCtx.imageSmoothingEnabled = true
   destCtx.drawImage(srcCanvas, cx, cy, cw, ch, 0, 0, destCanvas.width, destCanvas.height)

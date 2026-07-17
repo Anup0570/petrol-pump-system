@@ -10,7 +10,8 @@ import {
   Clock,
   Sparkles,
   Crop,
-  CheckCircle2
+  Bug,
+  Sliders
 } from 'lucide-react'
 import { OCRProcessor } from './OCRProcessor'
 import { DisplayDetector } from './DisplayDetector'
@@ -66,9 +67,13 @@ export function ReadingOCRModal({
   const [triggerOcrCounter, setTriggerOcrCounter] = useState<number>(0)
   const [imageSize, setImageSize] = useState<{ width: number; height: number }>({ width: 0, height: 0 })
 
-  // Canvases for OCR
+  // Debug panel state
+  const [debugMode, setDebugMode] = useState<boolean>(false)
+
+  // Canvases for OCR & Debugging
   const srcCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const destCanvasRef = useRef<HTMLCanvasElement | null>(null)
+  const croppedCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -86,7 +91,7 @@ export function ReadingOCRModal({
         const ctx = srcCanvas.getContext('2d')
         if (ctx) {
           ctx.drawImage(img, 0, 0)
-          // Run Sobel-based automatic LCD display border detection
+          // Run Sobel-based automatic LCD display border detection (with margin frame exclusion)
           const detected = autoDetectLcdScreen(srcCanvas)
           if (detected) {
             setCrop(detected)
@@ -116,7 +121,7 @@ export function ReadingOCRModal({
     }
   }, [isOpen, imageSrc])
 
-  // Run the OCR processing whenever triggerOcrCounter updates (e.g. initial load or crop resize release)
+  // Run the OCR processing whenever triggerOcrCounter updates (initial load or manual crop adjustment)
   useEffect(() => {
     if (isOpen && imageSrc && triggerOcrCounter > 0) {
       runOcrProcess()
@@ -132,6 +137,7 @@ export function ReadingOCRModal({
     img.onload = async () => {
       const srcCanvas = srcCanvasRef.current || document.createElement('canvas')
       const destCanvas = destCanvasRef.current || document.createElement('canvas')
+      const croppedCanvas = croppedCanvasRef.current
       
       srcCanvas.width = img.naturalWidth
       srcCanvas.height = img.naturalHeight
@@ -140,14 +146,29 @@ export function ReadingOCRModal({
 
       ctx.drawImage(img, 0, 0)
 
+      // Calculate absolute pixel coordinates for the crop region to draw the raw Cropped LCD debug preview
+      const cx = Math.max(0, Math.min(img.naturalWidth - 10, (crop.x / 100) * img.naturalWidth))
+      const cy = Math.max(0, Math.min(img.naturalHeight - 10, (crop.y / 100) * img.naturalHeight))
+      const cw = Math.max(10, Math.min(img.naturalWidth - cx, (crop.w / 100) * img.naturalWidth))
+      const ch = Math.max(10, Math.min(img.naturalHeight - cy, (crop.h / 100) * img.naturalHeight))
+
+      if (croppedCanvas) {
+        croppedCanvas.width = cw
+        croppedCanvas.height = ch
+        const croppedCtx = croppedCanvas.getContext('2d')
+        if (croppedCtx) {
+          croppedCtx.drawImage(img, cx, cy, cw, ch, 0, 0, cw, ch)
+        }
+      }
+
       try {
-        // Advanced preprocessor options optimized for digital Displays
+        // Preprocessor options: adaptiveThreshold (Bradley-Roth binarization)
         const options = {
           brightness: 0,
           contrast: 1.8,
           binarize: true,
           threshold: 120,
-          adaptiveThreshold: true, // Bradley-Roth local threshold
+          adaptiveThreshold: true,
           invert: false,
           scale: 2,
           crop: crop
@@ -182,7 +203,7 @@ export function ReadingOCRModal({
     img.src = imageSrc
   }
 
-  // Handle pointer dragging inside the crop overlay to adjust crop coordinates
+  // Handle dragging/resizing pointers for the interactive crop box
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>, handle: string) => {
     e.preventDefault()
     e.stopPropagation()
@@ -260,13 +281,12 @@ export function ReadingOCRModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm select-none">
-      {/* Hidden canvases for preprocessor logic */}
+      {/* Hidden container for main processing (visible canvases are loaded dynamically in debug view) */}
       <div className="hidden">
         <canvas ref={srcCanvasRef} />
-        <canvas ref={destCanvasRef} />
       </div>
 
-      <div className="bg-white border border-slate-200 w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl relative flex flex-col max-h-[95vh]">
+      <div className={`bg-white border border-slate-200 w-full ${debugMode ? 'max-w-2xl' : 'max-w-md'} rounded-3xl overflow-hidden shadow-2xl relative flex flex-col max-h-[95vh] transition-all duration-300`}>
         {/* Top header accent */}
         <div className="h-1.5 bg-[#FF6600]" />
 
@@ -279,12 +299,30 @@ export function ReadingOCRModal({
             </h3>
             <span className="text-[10px] text-slate-400 font-bold block mt-0.5">{nozzleLabel}</span>
           </div>
-          <button 
-            onClick={onClose} 
-            className="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          
+          <div className="flex items-center gap-2">
+            {/* Toggle Debug Mode Button */}
+            <button
+              type="button"
+              onClick={() => setDebugMode(!debugMode)}
+              className={`p-1.5 rounded-lg border transition-all flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider ${
+                debugMode 
+                  ? 'bg-slate-900 border-slate-800 text-[#FF6600]' 
+                  : 'bg-white border-slate-200 text-slate-400 hover:text-slate-600 hover:bg-slate-50'
+              }`}
+              title="Toggle Diagnostic Debug Mode"
+            >
+              <Bug className="w-4 h-4" />
+              {debugMode ? 'Debug ON' : 'Debug'}
+            </button>
+
+            <button 
+              onClick={onClose} 
+              className="text-slate-400 hover:text-slate-600 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Body */}
@@ -319,9 +357,8 @@ export function ReadingOCRModal({
                   }}
                   onPointerDown={(e) => handlePointerDown(e, 'move')}
                 >
-                  {/* Grid Lines inside crop box for styling */}
                   <div className="w-full h-full border border-[#FF6600]/25 relative pointer-events-none">
-                    {/* Corners resize handles */}
+                    {/* Corner resize drag circles */}
                     <div 
                       className="absolute -top-1.5 -left-1.5 w-3.5 h-3.5 bg-[#FF6600] border-2 border-white rounded-full cursor-nwse-resize pointer-events-auto"
                       onPointerDown={(e) => handlePointerDown(e, 'tl')}
@@ -349,6 +386,23 @@ export function ReadingOCRModal({
               </div>
             </div>
           )}
+
+          {/* Diagnostic Debug Panels: Cropped LCD & Processed OCR Input Canvases */}
+          <div className={debugMode ? "grid grid-cols-2 gap-4 border border-slate-200/60 p-3 rounded-2xl bg-slate-50/50" : "hidden"}>
+            <div className="space-y-1">
+              <span className="block text-[8px] font-bold text-slate-400 uppercase tracking-widest text-center">Cropped LCD (No Filters)</span>
+              <div className="border border-slate-200 bg-slate-900 rounded-xl p-1 flex justify-center items-center h-28 overflow-hidden">
+                <canvas ref={croppedCanvasRef} className="max-h-full max-w-full object-contain rounded" />
+              </div>
+            </div>
+            
+            <div className="space-y-1">
+              <span className="block text-[8px] font-bold text-slate-400 uppercase tracking-widest text-center">Processed OCR Input (160px H)</span>
+              <div className="border border-slate-200 bg-slate-900 rounded-xl p-1 flex justify-center items-center h-28 overflow-hidden">
+                <canvas ref={destCanvasRef} className="max-h-full max-w-full object-contain rounded" />
+              </div>
+            </div>
+          </div>
 
           {loading ? (
             <div className="flex flex-col items-center justify-center py-6 space-y-3">
@@ -429,6 +483,42 @@ export function ReadingOCRModal({
                     <span className="text-[10px] text-rose-500 font-medium block mt-0.5">
                       Poor contrast, reflection glare, or LCD digit segments not detected. Check crop box size and background.
                     </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Debug Console Panel */}
+              {debugMode && (
+                <div className="space-y-3 p-4 bg-slate-50 border border-slate-200/60 rounded-2xl text-left">
+                  <h4 className="text-[10px] font-black text-slate-700 uppercase tracking-wider border-b border-slate-200/50 pb-1.5 flex items-center gap-1.5">
+                    <Sliders className="w-3.5 h-3.5 text-[#FF6600]" />
+                    Engine Diagnostic Console
+                  </h4>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[10px]">
+                    <div className="space-y-1">
+                      <span className="font-bold text-slate-400 uppercase text-[8px]">Raw OCR Characters</span>
+                      <pre className="p-2.5 bg-slate-950 text-emerald-450 font-mono rounded-xl max-h-28 overflow-y-auto border border-slate-800 text-left whitespace-pre-wrap leading-normal shadow-inner select-text">
+                        {rawText || '(Empty Output)'}
+                      </pre>
+                    </div>
+                    
+                    <div className="space-y-2 font-semibold">
+                      <div className="flex justify-between py-1 border-b border-slate-200/40">
+                        <span className="text-slate-400 uppercase text-[8px]">Parsed Output</span>
+                        <span className="font-mono text-slate-800 font-bold">{parsedReading || '(NaN)'}</span>
+                      </div>
+                      <div className="flex justify-between py-1 border-b border-slate-200/40">
+                        <span className="text-slate-400 uppercase text-[8px]">Classified Layout</span>
+                        <span className="text-slate-800 font-bold">
+                          {rawText ? (DisplayDetector.detect(rawText) === 'model1' ? 'Model 1 (A:/V: labels)' : 'Model 2 (Single Value)') : 'Unknown'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between py-1 border-b border-slate-200/40">
+                        <span className="text-slate-400 uppercase text-[8px]">Active Driver</span>
+                        <span className="text-[#FF6600] font-bold">{ocrEngineUsed}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
