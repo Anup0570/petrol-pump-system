@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 export async function login(formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
+  const expectedRole = formData.get('expectedRole') as string
 
   if (!email || !password) {
     redirect('/login?error=Email and password are required')
@@ -50,7 +51,10 @@ export async function login(formData: FormData) {
           const role = profile?.role?.trim().toLowerCase()
           console.log('[Login Action] Success: Profile role is', role)
 
-          if (role === 'admin') {
+          if (expectedRole && expectedRole.toLowerCase() !== role) {
+            console.error('[Login Action] Error: Role mismatch - Selected:', expectedRole, 'Database:', role)
+            redirectPath = `/login?error=${encodeURIComponent(`Unauthorized: You do not have ${expectedRole === 'admin' ? 'Admin' : 'Staff'} privileges.`)}`
+          } else if (role === 'admin') {
             redirectPath = '/admin/dashboard'
           } else if (role === 'staff') {
             redirectPath = '/staff'

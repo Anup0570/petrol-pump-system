@@ -1,26 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  /* Elite Indian Oil Corporation Inspired light ERP Palette */
-  --accent: #ff6a00;       /* Indian Oil Orange */
-  --accent-hover: #e65c00; 
-  --accent-blue: #005b9e;  /* Indian Oil Royal Blue */
-  --accent-blue-hover: #004b84;
-  --success: #10b981;      /* Emerald Green */
-  --danger: #ef4444;       /* Rose Red */
-  --warning: #f59e0b;      /* Saturated Amber */
+  /* Indian Oil Corporation Inspired ERP Palette */
+  --accent: #FF6600;       /* Indian Oil Orange */
+  --accent-hover: #E65C00; 
+  --accent-blue: #003366;  /* Indian Oil Deep Blue */
+  --accent-blue-hover: #002244;
+  --success: #22C55E;      /* Success Green */
+  --danger: #EF4444;       /* Alert Red */
+  --warning: #F59E0B;      /* Amber */
   
   /* Saturated Fuel UI Mapping */
-  --petrol: #ff6a00;       /* Orange */
+  --petrol: #FF6600;       /* Orange */
   --diesel: #0284c7;       /* Sky Blue */
-  --oil: #7e22ce;          /* Purple */
+  --oil: #7E22CE;          /* Purple */
   
-  /* Premium Light Theme Core: Soft slate white */
-  --bg-primary: #f8fafc;   /* Slate 50 */
-  --panel-bg: #ffffff;     /* Pure White cards */
-  --panel-border: #e2e8f0; /* Slate 200 */
-  --text-main: #0f172a;    /* Slate 900 (High contrast) */
-  --text-muted: #64748b;   /* Slate 500 */
+  /* Premium Theme Core */
+  --bg-primary: #F5F5F5;   /* Light Grey Background */
+  --panel-bg: #FFFFFF;     /* White cards */
+  --panel-border: #E2E8F0; /* Slate 200 */
+  --text-main: #0F172A;    /* Slate 900 */
+  --text-muted: #64748B;   /* Slate 500 */
 }
 
 body {
