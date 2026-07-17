@@ -6,6 +6,12 @@ import type { NozzleReading, CreditItem } from '@/lib/types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { pageFadeIn, containerVariants, itemVariants } from '@/lib/motion'
 
+// OCR Imports
+import { useOCR } from '@/hooks/useOCR'
+import { ReadingCaptureButton } from '@/components/ocr/ReadingCaptureButton'
+import { ReadingOCRModal } from '@/components/ocr/ReadingOCRModal'
+import { OcrService } from '@/services/ocrService'
+
 // Nozzles Configuration
 const NOZZLES: Omit<NozzleReading, 'close' | 'volume'>[] = [
   { id: 'p1n1', label: 'Nozzle 1 (P1)', fuelType: 'petrol', open: 0 },
@@ -26,6 +32,9 @@ export default function StaffPageClient({ staffNames, initialOpenings, recentEnt
   // Navigation & View State
   const [view, setView] = useState<'dashboard' | 'wizard'>('dashboard')
   const [currentStep, setCurrentStep] = useState(1)
+
+  // AI OCR meter reading hook
+  const ocr = useOCR()
 
   // Draft Management State
   const [showRestoreModal, setShowRestoreModal] = useState(false)
@@ -426,6 +435,38 @@ export default function StaffPageClient({ staffNames, initialOpenings, recentEnt
       alert('Error submitting shift: ' + error.message)
       setSubmitting(false)
       return
+    }
+
+    // Process and upload OCR audit logs to Supabase Storage
+    try {
+      const nozzleIds = Object.keys(ocr.ocrRecords)
+      for (const nid of nozzleIds) {
+        const record = ocr.ocrRecords[nid]
+        const fileName = `shift_${shiftData.id}_nozzle_${nid}_${Date.now()}.png`
+        
+        // Upload image to storage
+        const publicUrl = await OcrService.uploadReadingImage(record.base64, fileName)
+        
+        // Log details in audit table
+        const pumpName = nid.startsWith('p1') ? 'Terminal Pump 01' : 'Terminal Pump 02'
+        const nozzleLabel = NOZZLES.find(nz => nz.id === nid)?.label || (nid === 'oil' ? 'Dispenser (Bulk 2T)' : nid)
+        
+        await OcrService.insertOcrAuditLog({
+          image_url: publicUrl,
+          ocr_reading: record.ocr_reading,
+          final_reading: parseFloat(closings[nid]),
+          confidence: record.confidence,
+          ocr_engine: 'Tesseract.js',
+          processing_time_ms: record.speedMs,
+          verified_by: staffName,
+          reading_type: 'closing',
+          pump_number: pumpName,
+          nozzle_number: nozzleLabel,
+          shift_id: shiftData.id
+        })
+      }
+    } catch (ocrErr) {
+      console.error('Failed to save OCR audit log details:', ocrErr)
     }
 
     // WhatsApp Message Summary
@@ -1112,18 +1153,34 @@ ${approvalLink}`
                                 </div>
 
                                 {/* Closing Reading */}
-                                <div>
+                                <div className="relative">
                                   <label className="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Closing (L)</label>
-                                  <input 
-                                    type="number" 
-                                    step="0.01"
-                                    placeholder="0.00"
-                                    value={closeVal}
-                                    onChange={e => setClosings(prev => ({ ...prev, [n.id]: e.target.value }))}
-                                    className={`w-full h-11 bg-white font-mono font-bold text-slate-800 text-center rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#FF6600]/10 ${
-                                      isError ? 'border-red-400 focus:border-red-500' : 'border-slate-200 focus:border-[#FF6600]'
-                                    }`} 
-                                  />
+                                  <div className="relative">
+                                    <input 
+                                      type="number" 
+                                      step="0.01"
+                                      placeholder="0.00"
+                                      value={closeVal}
+                                      onChange={e => {
+                                        if (ocr.ocrVerified[n.id]) {
+                                          ocr.clearOcrNozzle(n.id)
+                                        }
+                                        setClosings(prev => ({ ...prev, [n.id]: e.target.value }))
+                                      }}
+                                      className={`w-full h-11 bg-white font-mono font-bold text-slate-800 text-center rounded-xl border pr-10 focus:outline-none focus:ring-2 focus:ring-[#FF6600]/10 ${
+                                        isError ? 'border-red-400 focus:border-red-500' : 'border-slate-200 focus:border-[#FF6600]'
+                                      }`} 
+                                    />
+                                    {ocr.ocrVerified[n.id] && (
+                                      <span className="absolute left-3 top-[14px] bg-green-50 text-[#22C55E] border border-green-150 text-[7px] font-extrabold px-1 py-0.5 rounded flex items-center gap-0.5 select-none pointer-events-none z-10">
+                                        ✓ AI Read
+                                      </span>
+                                    )}
+                                    <ReadingCaptureButton 
+                                      onImageSelected={(dataUrl) => ocr.startOcrFlow(n.id, n.label, open, dataUrl)}
+                                      disabled={submitting}
+                                    />
+                                  </div>
                                 </div>
                               </div>
 
@@ -1172,18 +1229,34 @@ ${approvalLink}`
                             />
                           </div>
 
-                          <div>
+                          <div className="relative">
                             <label className="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Closing (L)</label>
-                            <input 
-                              type="number" 
-                              step="0.01"
-                              placeholder="0.00"
-                              value={bulkOilCloseStr}
-                              onChange={e => setClosings(prev => ({ ...prev, oil: e.target.value }))}
-                              className={`w-full h-11 bg-white font-mono font-bold text-slate-800 text-center rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#FF6600]/10 ${
-                                bulkOilCloseStr !== '' && parseFloat(bulkOilCloseStr) < bulkOilOpen ? 'border-red-400 focus:border-red-500' : 'border-slate-200 focus:border-[#FF6600]'
-                              }`} 
-                            />
+                            <div className="relative">
+                              <input 
+                                type="number" 
+                                step="0.01"
+                                placeholder="0.00"
+                                value={bulkOilCloseStr}
+                                onChange={e => {
+                                  if (ocr.ocrVerified['oil']) {
+                                    ocr.clearOcrNozzle('oil')
+                                  }
+                                  setClosings(prev => ({ ...prev, oil: e.target.value }))
+                                }}
+                                className={`w-full h-11 bg-white font-mono font-bold text-slate-800 text-center rounded-xl border pr-10 focus:outline-none focus:ring-2 focus:ring-[#FF6600]/10 ${
+                                  bulkOilCloseStr !== '' && parseFloat(bulkOilCloseStr) < bulkOilOpen ? 'border-red-400 focus:border-red-500' : 'border-slate-200 focus:border-[#FF6600]'
+                                }`} 
+                              />
+                              {ocr.ocrVerified['oil'] && (
+                                <span className="absolute left-3 top-[14px] bg-green-50 text-[#22C55E] border border-green-150 text-[7px] font-extrabold px-1 py-0.5 rounded flex items-center gap-0.5 select-none pointer-events-none z-10">
+                                  ✓ AI Read
+                                </span>
+                              )}
+                              <ReadingCaptureButton 
+                                onImageSelected={(dataUrl) => ocr.startOcrFlow('oil', 'Dispenser (Bulk 2T)', bulkOilOpen, dataUrl)}
+                                disabled={submitting}
+                              />
+                            </div>
                           </div>
                         </div>
 
@@ -1947,6 +2020,24 @@ ${approvalLink}`
           )}
         </AnimatePresence>
       )}
+
+      {/* Reusable Reading Confirmation OCR Modal */}
+      <ReadingOCRModal
+        isOpen={ocr.isModalOpen}
+        onClose={ocr.cancelOcrFlow}
+        imageSrc={ocr.imageSrc}
+        openingReading={ocr.activeOpeningReading}
+        onConfirm={(finalReading, confidence, timeMs, base64Image) => {
+          const res = ocr.confirmOcrFlow(finalReading, confidence, timeMs, base64Image)
+          if (res) {
+            setClosings(prev => ({ ...prev, [res.nozzleId]: res.value }))
+          }
+        }}
+        onRetake={() => {
+          ocr.cancelOcrFlow()
+        }}
+        nozzleLabel={ocr.activeNozzleLabel}
+      />
     </div>
   )
 }

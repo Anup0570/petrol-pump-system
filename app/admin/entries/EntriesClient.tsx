@@ -6,6 +6,11 @@ import { format } from 'date-fns'
 import type { FuelEntry } from '@/lib/types'
 import DeleteShiftButton from '../dashboard/DeleteShiftButton'
 
+// OCR Auditing Imports
+import { OcrService } from '@/services/ocrService'
+import { ReadingImagePreview } from '@/components/ocr/ReadingImagePreview'
+import { Loader2 } from 'lucide-react'
+
 export default function EntriesClient({ initialEntries, isAdmin = false }: { initialEntries: FuelEntry[], isAdmin?: boolean }) {
   const [entries, setEntries] = useState<FuelEntry[]>(initialEntries)
   const [search, setSearch] = useState('')
@@ -13,6 +18,32 @@ export default function EntriesClient({ initialEntries, isAdmin = false }: { ini
   const [dateFilter, setDateFilter] = useState('')
   const [expanded, setExpanded] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
+
+  // OCR Auditing States
+  const [activeAudit, setActiveAudit] = useState<any | null>(null)
+  const [isAuditOpen, setIsAuditOpen] = useState<boolean>(false)
+  const [loadingAudit, setLoadingAudit] = useState<boolean>(false)
+
+  const handleReadingClick = async (shiftId: string, nozzleLabel: string, verifiedBy: string) => {
+    setLoadingAudit(true)
+    try {
+      const data = await OcrService.getOcrAuditLog(shiftId, nozzleLabel)
+      if (data) {
+        setActiveAudit({
+          ...data,
+          verified_by: data.verified_by || verifiedBy
+        })
+        setIsAuditOpen(true)
+      } else {
+        alert("No AI OCR audit log exists for this reading. This reading was typed manually by the operator.")
+      }
+    } catch (err) {
+      console.error('Audit load failed:', err)
+      alert("Failed to load OCR audit log.")
+    } finally {
+      setLoadingAudit(false)
+    }
+  }
 
   const filtered = entries.filter(e => {
     const matchSearch = !search || e.staff_name.toLowerCase().includes(search.toLowerCase())
@@ -142,7 +173,7 @@ export default function EntriesClient({ initialEntries, isAdmin = false }: { ini
                     {expanded === entry.id && (
                       <tr key={`${entry.id}-detail`}>
                         <td colSpan={12} className="px-6 py-6 bg-slate-50/50 border-b border-slate-200">
-                          <EntryDetail entry={entry} />
+                          <EntryDetail entry={entry} onReadingClick={handleReadingClick} />
                         </td>
                       </tr>
                     )}
@@ -153,11 +184,32 @@ export default function EntriesClient({ initialEntries, isAdmin = false }: { ini
           </table>
         </div>
       </div>
+
+      {loadingAudit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs select-none">
+          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xl flex items-center gap-3">
+            <Loader2 className="w-5 h-5 text-[#003366] animate-spin" />
+            <span className="text-xs font-bold text-slate-700">Loading OCR audit logs...</span>
+          </div>
+        </div>
+      )}
+
+      <ReadingImagePreview
+        isOpen={isAuditOpen}
+        onClose={() => setIsAuditOpen(false)}
+        auditData={activeAudit}
+      />
     </div>
   )
 }
 
-function EntryDetail({ entry }: { entry: FuelEntry }) {
+function EntryDetail({ 
+  entry, 
+  onReadingClick 
+}: { 
+  entry: FuelEntry, 
+  onReadingClick: (shiftId: string, nozzleLabel: string, verifiedBy: string) => void 
+}) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-[13px] bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
       {/* Nozzle Readings */}
@@ -165,9 +217,20 @@ function EntryDetail({ entry }: { entry: FuelEntry }) {
         <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3 pb-1.5 border-b border-slate-100">Nozzle Readings</h4>
         <div className="space-y-1.5">
           {(entry.nozzle_readings || []).map((n: any) => (
-            <div key={n.id} className="flex justify-between py-1 border-b border-slate-100">
+            <div key={n.id} className="flex justify-between py-1 border-b border-slate-100 items-center">
               <span className="text-slate-500 font-semibold">{n.label}</span>
-              <span className="text-slate-700 font-bold">{n.open} → {n.close} <span className="text-slate-400 font-medium">({n.volume?.toFixed(2)}L)</span></span>
+              <div className="flex items-center gap-1 font-bold text-slate-700">
+                <span className="text-slate-500 font-normal">{n.open} → </span>
+                <button
+                  type="button"
+                  onClick={() => onReadingClick(entry.id, n.label, entry.staff_name)}
+                  className="text-slate-800 border-b border-dashed border-slate-400 hover:text-[#003366] hover:border-[#003366] cursor-pointer"
+                  title="Click to view AI OCR audit details (if used)"
+                >
+                  {n.close}
+                </button>
+                <span className="text-slate-400 font-medium">({n.volume?.toFixed(2)}L)</span>
+              </div>
             </div>
           ))}
         </div>
