@@ -5,22 +5,31 @@ import {
   RotateCcw, 
   X, 
   AlertTriangle, 
-  CheckCircle2, 
   Loader2, 
   TrendingUp, 
-  Clock 
+  Clock,
+  Sparkles,
+  Crop,
+  CheckCircle2
 } from 'lucide-react'
 import { OCRProcessor } from './OCRProcessor'
 import { DisplayDetector } from './DisplayDetector'
 import { PumpDisplayParser } from './PumpDisplayParser'
 import { OCRValidation } from './OCRValidation'
+import { autoDetectLcdScreen } from '@/utils/imagePreprocessor'
 
 interface ReadingOCRModalProps {
   isOpen: boolean
   onClose: () => void
   imageSrc: string | null
   openingReading: number
-  onConfirm: (finalReading: string, confidence: number, timeMs: number, originalBase64: string) => void
+  onConfirm: (
+    finalReading: string,
+    confidence: number,
+    timeMs: number,
+    originalBase64: string,
+    ocrEngine: string
+  ) => void
   onRetake: () => void
   nozzleLabel: string
 }
@@ -42,6 +51,7 @@ export function ReadingOCRModal({
   const [parsedReading, setParsedReading] = useState<string>('')
   const [confidence, setConfidence] = useState<number>(0)
   const [processingTime, setProcessingTime] = useState<number>(0)
+  const [ocrEngineUsed, setOcrEngineUsed] = useState<string>('Tesseract.js')
   
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(false)
@@ -50,15 +60,50 @@ export function ReadingOCRModal({
   // Validation Warnings
   const [warnings, setWarnings] = useState<string[]>([])
 
+  // Interactive Cropping states
+  const [crop, setCrop] = useState<{ x: number; y: number; w: number; h: number }>({ x: 10, y: 15, w: 80, h: 70 })
+  const [autoCropSuccess, setAutoCropSuccess] = useState<boolean>(false)
+  const [triggerOcrCounter, setTriggerOcrCounter] = useState<number>(0)
+  const [imageSize, setImageSize] = useState<{ width: number; height: number }>({ width: 0, height: 0 })
+
   // Canvases for OCR
   const srcCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const destCanvasRef = useRef<HTMLCanvasElement | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (isOpen && imageSrc) {
-      runOcrProcess()
+      // Clear states and detect LCD screen on the initial image
+      setLoading(true)
+      setStatusText('Analyzing display LCD screen...')
+      
+      const img = new Image()
+      img.onload = () => {
+        const srcCanvas = srcCanvasRef.current || document.createElement('canvas')
+        srcCanvas.width = img.naturalWidth
+        srcCanvas.height = img.naturalHeight
+        
+        const ctx = srcCanvas.getContext('2d')
+        if (ctx) {
+          ctx.drawImage(img, 0, 0)
+          // Run Sobel-based automatic LCD display border detection
+          const detected = autoDetectLcdScreen(srcCanvas)
+          if (detected) {
+            setCrop(detected)
+            setAutoCropSuccess(true)
+          } else {
+            // Default center-ish crop
+            setCrop({ x: 10, y: 15, w: 80, h: 70 })
+            setAutoCropSuccess(false)
+          }
+        }
+        
+        setImageSize({ width: img.naturalWidth, height: img.naturalHeight })
+        setTriggerOcrCounter(1)
+      }
+      img.src = imageSrc
     } else {
-      // Reset state
+      // Reset state on close
       setLoading(true)
       setRawText('')
       setParsedReading('')
@@ -66,41 +111,46 @@ export function ReadingOCRModal({
       setProcessingTime(0)
       setIsEditing(false)
       setWarnings([])
+      setAutoCropSuccess(false)
+      setTriggerOcrCounter(0)
     }
   }, [isOpen, imageSrc])
+
+  // Run the OCR processing whenever triggerOcrCounter updates (e.g. initial load or crop resize release)
+  useEffect(() => {
+    if (isOpen && imageSrc && triggerOcrCounter > 0) {
+      runOcrProcess()
+    }
+  }, [triggerOcrCounter])
 
   const runOcrProcess = async () => {
     if (!imageSrc) return
     setLoading(true)
-    setStatusText('Reading meter display...')
-
-    // Delay slightly to simulate processing steps and show smooth UI transitions
-    await new Promise((resolve) => setTimeout(resolve, 300))
-    setStatusText('Detecting display layout...')
+    setStatusText('Running OCR Recognition...')
 
     const img = new Image()
     img.onload = async () => {
       const srcCanvas = srcCanvasRef.current || document.createElement('canvas')
       const destCanvas = destCanvasRef.current || document.createElement('canvas')
       
-      srcCanvas.width = 400
-      srcCanvas.height = 200
+      srcCanvas.width = img.naturalWidth
+      srcCanvas.height = img.naturalHeight
       const ctx = srcCanvas.getContext('2d')
       if (!ctx) return
 
-      ctx.drawImage(img, 0, 0, 400, 200)
+      ctx.drawImage(img, 0, 0)
 
-      setStatusText('Extracting reading...')
       try {
-        // Set standard preprocessing parameters optimal for digital displays
+        // Advanced preprocessor options optimized for digital Displays
         const options = {
           brightness: 0,
-          contrast: 1.6,
+          contrast: 1.8,
           binarize: true,
           threshold: 120,
+          adaptiveThreshold: true, // Bradley-Roth local threshold
           invert: false,
           scale: 2,
-          crop: { x: 5, y: 5, w: 90, h: 90 }
+          crop: crop
         }
 
         const ocrResult = await OCRProcessor.process(srcCanvas, destCanvas, options)
@@ -115,9 +165,10 @@ export function ReadingOCRModal({
         setParsedReading(parsed)
         setEditedReading(parsed)
         setConfidence(ocrResult.confidence)
+        setOcrEngineUsed(ocrResult.ocrEngine)
         setProcessingTime(ocrResult.processingTimeMs)
 
-        // Validate
+        // Validate closing reading against opening reading
         const validation = OCRValidation.validate(parsed, openingReading)
         setWarnings(validation.warnings)
       } catch (err) {
@@ -131,23 +182,91 @@ export function ReadingOCRModal({
     img.src = imageSrc
   }
 
-  // Handle manual edits
+  // Handle pointer dragging inside the crop overlay to adjust crop coordinates
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>, handle: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const container = containerRef.current
+    if (!container) return
+
+    const rect = container.getBoundingClientRect()
+    const startX = e.clientX
+    const startY = e.clientY
+    const startCrop = { ...crop }
+
+    const target = e.target as HTMLElement
+    target.setPointerCapture(e.pointerId)
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      const dx = ((moveEvent.clientX - startX) / rect.width) * 100
+      const dy = ((moveEvent.clientY - startY) / rect.height) * 100
+
+      setCrop(prev => {
+        const next = { ...prev }
+
+        if (handle === 'move') {
+          next.x = Math.max(0, Math.min(100 - prev.w, startCrop.x + dx))
+          next.y = Math.max(0, Math.min(100 - prev.h, startCrop.y + dy))
+        } else {
+          if (handle.includes('r')) {
+            next.w = Math.max(10, Math.min(100 - startCrop.x, startCrop.w + dx))
+          }
+          if (handle.includes('l')) {
+            const newX = Math.max(0, Math.min(startCrop.x + startCrop.w - 10, startCrop.x + dx))
+            next.w = startCrop.x + startCrop.w - newX
+            next.x = newX
+          }
+          if (handle.includes('b')) {
+            next.h = Math.max(10, Math.min(100 - startCrop.y, startCrop.h + dy))
+          }
+          if (handle.includes('t')) {
+            const newY = Math.max(0, Math.min(startCrop.y + startCrop.h - 10, startCrop.y + dy))
+            next.h = startCrop.y + startCrop.h - newY
+            next.y = newY
+          }
+        }
+        return next
+      })
+    }
+
+    const handlePointerUp = () => {
+      target.releasePointerCapture(e.pointerId)
+      window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('pointerup', handlePointerUp)
+      
+      // Trigger new OCR calculation on drag release
+      setTriggerOcrCounter(prev => prev + 1)
+    }
+
+    window.addEventListener('pointermove', handlePointerMove)
+    window.addEventListener('pointerup', handlePointerUp)
+  }
+
+  // Handle final confirmations
   const handleConfirm = () => {
     const finalVal = isEditing ? editedReading : parsedReading
-    onConfirm(finalVal, confidence, processingTime, imageSrc || '')
+    onConfirm(finalVal, confidence, processingTime, imageSrc || '', ocrEngineUsed)
   }
 
   if (!isOpen) return null
 
+  // Determine confidence color styling
+  let confColor = 'text-rose-600 bg-rose-50 border-rose-200'
+  if (confidence >= 98) {
+    confColor = 'text-emerald-600 bg-emerald-50 border-emerald-200'
+  } else if (confidence >= 90) {
+    confColor = 'text-amber-600 bg-amber-50 border-amber-200'
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm select-none">
-      {/* Hidden canvases for processing */}
+      {/* Hidden canvases for preprocessor logic */}
       <div className="hidden">
-        <canvas ref={srcCanvasRef} width="400" height="200" />
-        <canvas ref={destCanvasRef} width="400" height="200" />
+        <canvas ref={srcCanvasRef} />
+        <canvas ref={destCanvasRef} />
       </div>
 
-      <div className="bg-white border border-slate-200 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl relative flex flex-col max-h-[90vh]">
+      <div className="bg-white border border-slate-200 w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl relative flex flex-col max-h-[95vh]">
         {/* Top header accent */}
         <div className="h-1.5 bg-[#FF6600]" />
 
@@ -155,8 +274,8 @@ export function ReadingOCRModal({
         <div className="flex justify-between items-center p-5 border-b border-slate-100">
           <div>
             <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-              <SparklesIcon className="w-4 h-4 text-[#FF6600]" />
-              AI Reading Confirmation
+              <Sparkles className="w-4 h-4 text-[#FF6600]" />
+              AI Meter Reading V2
             </h3>
             <span className="text-[10px] text-slate-400 font-bold block mt-0.5">{nozzleLabel}</span>
           </div>
@@ -169,32 +288,83 @@ export function ReadingOCRModal({
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-5 overflow-y-auto flex-1">
+        <div className="p-6 space-y-4 overflow-y-auto flex-1">
+          
+          {/* Section: Original Image with Drag & Resize Interactive Cropping Bounding Box */}
+          {imageSrc && (
+            <div className="space-y-1">
+              <span className="flex items-center gap-1 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                <Crop className="w-3 h-3 text-[#FF6600]" />
+                Original Photo (Drag Box / Corners to Crop)
+              </span>
+              
+              <div 
+                ref={containerRef}
+                className="relative rounded-2xl border border-slate-200 bg-slate-950 overflow-hidden select-none flex items-center justify-center h-44 md:h-52"
+              >
+                <img 
+                  src={imageSrc} 
+                  alt="Captured Meter Original" 
+                  className="max-h-full max-w-full object-contain pointer-events-none"
+                />
+                
+                {/* Crop Overlay Area */}
+                <div 
+                  className="absolute border-2 border-dashed border-[#FF6600] bg-[#FF6600]/10 shadow-[0_0_0_9999px_rgba(15,23,42,0.65)] touch-none cursor-move flex items-center justify-center"
+                  style={{
+                    left: `${crop.x}%`,
+                    top: `${crop.y}%`,
+                    width: `${crop.w}%`,
+                    height: `${crop.h}%`
+                  }}
+                  onPointerDown={(e) => handlePointerDown(e, 'move')}
+                >
+                  {/* Grid Lines inside crop box for styling */}
+                  <div className="w-full h-full border border-[#FF6600]/25 relative pointer-events-none">
+                    {/* Corners resize handles */}
+                    <div 
+                      className="absolute -top-1.5 -left-1.5 w-3.5 h-3.5 bg-[#FF6600] border-2 border-white rounded-full cursor-nwse-resize pointer-events-auto"
+                      onPointerDown={(e) => handlePointerDown(e, 'tl')}
+                    />
+                    <div 
+                      className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-[#FF6600] border-2 border-white rounded-full cursor-nesw-resize pointer-events-auto"
+                      onPointerDown={(e) => handlePointerDown(e, 'tr')}
+                    />
+                    <div 
+                      className="absolute -bottom-1.5 -left-1.5 w-3.5 h-3.5 bg-[#FF6600] border-2 border-white rounded-full cursor-nesw-resize pointer-events-auto"
+                      onPointerDown={(e) => handlePointerDown(e, 'bl')}
+                    />
+                    <div 
+                      className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 bg-[#FF6600] border-2 border-white rounded-full cursor-nwse-resize pointer-events-auto"
+                      onPointerDown={(e) => handlePointerDown(e, 'br')}
+                    />
+                  </div>
+                </div>
+
+                {autoCropSuccess && (
+                  <span className="absolute top-2 left-2 bg-emerald-500 text-white text-[7px] font-extrabold px-1.5 py-0.5 rounded-md shadow-sm pointer-events-none select-none">
+                    Auto-Cropped LCD
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-10 space-y-4">
-              <Loader2 className="w-10 h-10 text-[#FF6600] animate-spin" />
+            <div className="flex flex-col items-center justify-center py-6 space-y-3">
+              <Loader2 className="w-8 h-8 text-[#FF6600] animate-spin" />
               <div className="text-center">
-                <span className="text-sm font-bold text-slate-700 block">{statusText}</span>
-                <span className="text-[10px] text-slate-400 block mt-1">Applying binarization filters...</span>
+                <span className="text-xs font-bold text-slate-700 block">{statusText}</span>
+                <span className="text-[9px] text-slate-400 block mt-0.5">Running localized binarization filters...</span>
               </div>
             </div>
           ) : (
             <div className="space-y-4">
-              {/* Display visual cropped region */}
-              {imageSrc && (
-                <div className="rounded-2xl border border-slate-200 overflow-hidden bg-slate-50 flex justify-center p-1.5 shadow-inner">
-                  <img 
-                    src={imageSrc} 
-                    alt="Captured Meter Display" 
-                    className="max-h-36 w-auto rounded-lg object-contain"
-                  />
-                </div>
-              )}
-
-              {/* Detected readingsMonospace block */}
+              
+              {/* Detected Monospace reading value */}
               {parsedReading ? (
                 <div className="space-y-3">
-                  <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Detected Reading</span>
+                  <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">AI Reading Detected</span>
                   
                   {!isEditing ? (
                     <div className="bg-slate-900 border border-slate-800 text-[#FF6600] rounded-2xl p-4 text-center font-mono font-black text-3xl tracking-widest">
@@ -206,49 +376,72 @@ export function ReadingOCRModal({
                         type="text" 
                         value={editedReading}
                         onChange={(e) => setEditedReading(e.target.value)}
-                        className="w-full text-center font-mono font-bold text-2xl border border-[#FF6600] text-slate-800 py-3 rounded-2xl"
+                        className="w-full text-center font-mono font-bold text-2xl border border-[#FF6600] text-slate-800 py-3 rounded-2xl focus:outline-none"
                       />
-                      <span className="block text-[9px] text-slate-400 font-bold text-center">Edit value if numbers were misread</span>
+                      <span className="block text-[9px] text-slate-400 font-bold text-center">Correct digits manually if misread by AI</span>
                     </div>
                   )}
 
-                  {/* Confidence and speed */}
-                  <div className="grid grid-cols-2 gap-2 text-center text-[10px] bg-slate-50 border border-slate-100 p-2.5 rounded-xl">
-                    <div>
-                      <span className="text-slate-400 font-bold block">Confidence Score</span>
-                      <span className="font-mono font-black text-slate-800 text-xs flex items-center justify-center gap-1 mt-0.5">
-                        <TrendingUp className="w-3.5 h-3.5 text-green-500" />
+                  {/* Confidence and Speed metrics info */}
+                  <div className="grid grid-cols-3 gap-2 text-center text-[10px] bg-slate-50 border border-slate-200/55 p-3 rounded-2xl font-semibold">
+                    <div className={`rounded-xl border p-2 flex flex-col items-center justify-center ${confColor}`}>
+                      <span className="text-[9px] font-bold opacity-80">Confidence</span>
+                      <span className="font-mono font-black text-xs flex items-center justify-center gap-0.5 mt-0.5">
+                        <TrendingUp className="w-3.5 h-3.5" />
                         {confidence}%
                       </span>
                     </div>
-                    <div>
-                      <span className="text-slate-400 font-bold block">Processing Time</span>
-                      <span className="font-mono font-black text-slate-800 text-xs flex items-center justify-center gap-1 mt-0.5">
+                    
+                    <div className="p-2 border border-slate-200/40 rounded-xl bg-white flex flex-col items-center justify-center text-slate-600">
+                      <span className="text-[9px] font-bold text-slate-400">OCR Engine</span>
+                      <span className="font-bold text-xs mt-0.5 text-slate-700 truncate w-full px-1">
+                        {ocrEngineUsed}
+                      </span>
+                    </div>
+
+                    <div className="p-2 border border-slate-200/40 rounded-xl bg-white flex flex-col items-center justify-center text-slate-600">
+                      <span className="text-[9px] font-bold text-slate-400">OCR Speed</span>
+                      <span className="font-mono font-bold text-xs flex items-center justify-center gap-0.5 mt-0.5 text-slate-700">
                         <Clock className="w-3.5 h-3.5 text-slate-400" />
                         {processingTime} ms
                       </span>
                     </div>
                   </div>
+
+                  {/* Low Confidence Warning warning / Retake recommendation */}
+                  {confidence < 90 && (
+                    <div className="p-3 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-2 text-rose-800">
+                      <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider block">Low Confidence Detected ({confidence}%)</span>
+                        <span className="text-[9px] text-rose-600 font-medium block mt-0.5 leading-normal">
+                          Luminance or glare issue makes this reading unreliable. We highly recommend clicking **Retake Photo** to try again.
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="bg-rose-50 border border-rose-100 rounded-2xl p-4 text-center text-rose-700 space-y-2">
                   <AlertTriangle className="w-8 h-8 text-rose-600 mx-auto" />
                   <div>
                     <span className="text-sm font-bold block">Unable to detect reading</span>
-                    <span className="text-[10px] text-rose-500 font-medium block mt-0.5">Poor contrast or block reflection detected.</span>
+                    <span className="text-[10px] text-rose-500 font-medium block mt-0.5">
+                      Poor contrast, reflection glare, or LCD digit segments not detected. Check crop box size and background.
+                    </span>
                   </div>
                 </div>
               )}
 
-              {/* Validation Warnings */}
+              {/* Validation Warnings list block */}
               {warnings.length > 0 && (
-                <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl space-y-1.5">
-                  <span className="text-[10px] font-bold text-amber-800 flex items-center gap-1.5">
+                <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl space-y-1">
+                  <span className="text-[10px] font-black text-amber-800 flex items-center gap-1.5">
                     <AlertTriangle className="w-4 h-4 text-amber-600" />
-                    Validation Guard Warnings ({warnings.length})
+                    Validation Alert Warnings ({warnings.length})
                   </span>
-                  <ul className="list-disc pl-3.5 text-[9px] text-amber-700 space-y-1 leading-relaxed">
-                    {warnings.map((w, idx) => <li key={idx}>{w}</li>)}
+                  <ul className="list-disc pl-4 text-[9px] text-amber-700 space-y-1 leading-relaxed">
+                    {warnings.map((w, idx) => <li key={idx} className="font-semibold">{w}</li>)}
                   </ul>
                 </div>
               )}
@@ -262,6 +455,7 @@ export function ReadingOCRModal({
             {parsedReading ? (
               <>
                 <button
+                  type="button"
                   onClick={() => setIsEditing(!isEditing)}
                   className="flex-1 h-10 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1"
                 >
@@ -270,6 +464,7 @@ export function ReadingOCRModal({
                 </button>
                 
                 <button
+                  type="button"
                   onClick={handleConfirm}
                   className="flex-1 h-10 bg-[#003366] hover:bg-[#002244] text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 shadow-sm"
                 >
@@ -280,16 +475,18 @@ export function ReadingOCRModal({
             ) : (
               <>
                 <button
+                  type="button"
                   onClick={onClose}
                   className="flex-1 h-10 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition-all"
                 >
                   Manual Entry
                 </button>
                 <button
+                  type="button"
                   onClick={onRetake}
                   className="flex-1 h-10 bg-[#FF6600] hover:bg-[#E65C00] text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 shadow-sm"
                 >
-                  <RotateCcw className="w-3.5 h-3.5 animate-spin-reverse" />
+                  <RotateCcw className="w-3.5 h-3.5" />
                   Retake Photo
                 </button>
               </>
@@ -298,27 +495,6 @@ export function ReadingOCRModal({
         )}
       </div>
     </div>
-  )
-}
-
-function SparklesIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-      <path d="m5 3 1 2.5L8.5 6 6 7 5 9.5 4 7 1.5 6 4 5.5 5 3Z" />
-      <path d="m19 17 1 2.5 2.5.5-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1 1-2.5Z" />
-    </svg>
   )
 }
 

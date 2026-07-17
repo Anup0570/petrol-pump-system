@@ -456,7 +456,7 @@ export default function StaffPageClient({ staffNames, initialOpenings, recentEnt
           ocr_reading: record.ocr_reading,
           final_reading: parseFloat(closings[nid]),
           confidence: record.confidence,
-          ocr_engine: 'Tesseract.js',
+          ocr_engine: record.ocr_engine || 'Tesseract.js',
           processing_time_ms: record.speedMs,
           verified_by: staffName,
           reading_type: 'closing',
@@ -2027,8 +2027,8 @@ ${approvalLink}`
         onClose={ocr.cancelOcrFlow}
         imageSrc={ocr.imageSrc}
         openingReading={ocr.activeOpeningReading}
-        onConfirm={(finalReading, confidence, timeMs, base64Image) => {
-          const res = ocr.confirmOcrFlow(finalReading, confidence, timeMs, base64Image)
+        onConfirm={(finalReading, confidence, timeMs, base64Image, ocrEngine) => {
+          const res = ocr.confirmOcrFlow(finalReading, confidence, timeMs, base64Image, ocrEngine)
           if (res) {
             setClosings(prev => ({ ...prev, [res.nozzleId]: res.value }))
           }

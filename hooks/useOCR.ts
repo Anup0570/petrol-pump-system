@@ -5,6 +5,7 @@ export interface OcrMetadataEntry {
   confidence: number | null
   speedMs: number | null
   base64: string
+  ocr_engine: string
 }
 
 export function useOCR() {
@@ -32,11 +33,10 @@ export function useOCR() {
     finalReading: string,
     confidence: number,
     timeMs: number,
-    base64Image: string
+    base64Image: string,
+    ocrEngine: string
   ) => {
     if (!activeNozzleId) return null
-
-    const finalNum = parseFloat(finalReading)
 
     // Store metadata details for submission audit logs
     setOcrRecords(prev => ({
@@ -45,7 +45,8 @@ export function useOCR() {
         ocr_reading: isNaN(parseFloat(finalReading)) ? null : parseFloat(finalReading),
         confidence: confidence || null,
         speedMs: timeMs || null,
-        base64: base64Image
+        base64: base64Image,
+        ocr_engine: ocrEngine
       }
     }))
 

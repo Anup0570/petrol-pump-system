@@ -9,8 +9,10 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@capacitor-mlkit/text-recognition": "^8.2.0",
     "@capacitor/android": "^8.4.0",
     "@capacitor/core": "^8.4.0",
+    "@capacitor/filesystem": "^8.1.2",
     "@supabase/ssr": "^0.9.0",
     "@supabase/supabase-js": "^2.99.0",
     "date-fns": "^4.1.0",

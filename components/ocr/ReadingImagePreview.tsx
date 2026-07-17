@@ -113,10 +113,16 @@ export function ReadingImagePreview({ isOpen, onClose, auditData }: ReadingImage
                   {auditData.ocr_reading !== null ? auditData.ocr_reading : '—'}
                 </span>
               </div>
-              <div className="flex justify-between items-center pt-1">
+              <div className="flex justify-between items-center pb-2 border-b border-slate-200/40">
                 <span className="text-[#003366] font-bold uppercase text-[9px]">Saved Final Reading</span>
                 <span className="font-mono font-black text-[#003366] text-base">
                   {auditData.final_reading}
+                </span>
+              </div>
+              <div className="flex justify-between items-center pt-1">
+                <span className="text-slate-400 font-bold uppercase text-[9px]">Difference</span>
+                <span className={`font-mono font-black text-xs ${isEdited ? 'text-amber-600' : 'text-slate-500'}`}>
+                  {isEdited && ocrNum !== null ? `${(finalNum - ocrNum) > 0 ? '+' : ''}${(finalNum - ocrNum).toFixed(3)}` : '0.000 (No Edit)'}
                 </span>
               </div>
             </div>
