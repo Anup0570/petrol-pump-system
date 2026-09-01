@@ -28,7 +28,10 @@ export async function login(formData: FormData) {
 
     if (authError) {
       console.error('[Login Action] Error: Authentication failed -', authError.message)
-      redirectPath = `/login?error=${encodeURIComponent(authError.message)}`
+      const errMsg = authError.message.includes('fetch failed')
+        ? 'Database connection failed. Please check your internet connection or verify SUPABASE_URL in project environment settings.'
+        : authError.message
+      redirectPath = `/login?error=${encodeURIComponent(errMsg)}`
     } else {
       console.log('[Login Action] Success: Authentication successful. Fetching user info...')
       const { data: { user } } = await supabase.auth.getUser()
@@ -67,9 +70,9 @@ export async function login(formData: FormData) {
     }
   } catch (err: any) {
     console.error('[Login Action] Critical Exception: Unexpected error during login flow:', err)
-    let userMsg = 'Connection error. Please check backend connection.'
-    if (err && err.message) {
-      userMsg += ` (${err.message})`
+    let userMsg = 'Database connection failed. Please check your internet connection or verify SUPABASE_URL in project environment settings.'
+    if (err && err.message && !err.message.includes('fetch failed')) {
+      userMsg = `Connection error: ${err.message}`
     }
     redirectPath = `/login?error=${encodeURIComponent(userMsg)}`
   }

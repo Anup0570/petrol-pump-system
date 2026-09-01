@@ -2,69 +2,54 @@ import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
   try {
-    const { image } = await request.json()
+    const body = await request.json()
+    const images: string[] = body.images || (body.image ? [body.image] : [])
 
-    if (!image) {
+    if (images.length === 0) {
       return NextResponse.json({ error: 'Missing image content' }, { status: 400 })
     }
 
-    const apiKey = process.env.GOOGLE_CLOUD_VISION_API_KEY
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: 'Google Cloud Vision API Key is not configured' },
-        { status: 501 }
-      )
-    }
+    // Call the Python PaddleOCR FastAPI microservice
+    const ocrServiceUrl = process.env.OCR_SERVICE_URL || 'http://localhost:5050/ocr'
 
-    // Clean base64 string (remove data URL headers if present)
-    const base64Content = image.split(',')[1] || image
-
-    const requestPayload = {
-      requests: [
-        {
-          image: {
-            content: base64Content,
-          },
-          features: [
-            {
-              type: 'TEXT_DETECTION',
-            },
-          ],
-        },
-      ],
-    }
-
-    const response = await fetch(
-      `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`,
-      {
+    try {
+      const response = await fetch(ocrServiceUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestPayload),
-      }
-    )
+        body: JSON.stringify({ image: images[0] }),
+      })
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('Google Vision API returned an error:', errorText)
+      if (!response.ok) {
+        const errText = await response.text()
+        console.error('Python OCR service returned an error:', errText)
+        return NextResponse.json(
+          { error: 'AI reading temporarily unavailable.' },
+          { status: 503 }
+        )
+      }
+
+      const ocrResult = await response.json()
+      
+      // Return details in unified format
+      return NextResponse.json({
+        text: ocrResult.rawText,
+        reading: ocrResult.reading,
+        engine: ocrResult.engine,
+        confidence: ocrResult.confidence,
+        processingTimeMs: ocrResult.processingTimeMs,
+        displayModel: ocrResult.displayModel
+      })
+
+    } catch (fetchErr: any) {
+      console.error('Failed to communicate with Python OCR microservice:', fetchErr)
       return NextResponse.json(
-        { error: 'Failed to communicate with Google Cloud Vision API' },
-        { status: response.status }
+        { error: 'AI reading temporarily unavailable.' },
+        { status: 503 }
       )
     }
 
-    const data = await response.json()
-    const textAnnotations = data.responses?.[0]?.textAnnotations
-
-    if (!textAnnotations || textAnnotations.length === 0) {
-      return NextResponse.json({ text: '' })
-    }
-
-    // textAnnotations[0] contains the entire detected text block
-    const detectedText = textAnnotations[0].description || ''
-
-    return NextResponse.json({ text: detectedText })
   } catch (error: any) {
     console.error('OCR route handler failure:', error)
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 })

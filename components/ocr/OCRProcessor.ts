@@ -7,10 +7,12 @@ export interface OCRResult {
   confidence: number
   processingTimeMs: number
   ocrEngine: string
+  parsedReading?: string
+  displayModel?: string
 }
 
 /**
- * Reusable Class to process an image and perform OCR using Google ML Kit, Google Vision Cloud, or Tesseract.js.
+ * Reusable Class to process an image and perform OCR using Google ML Kit, Google Vision Cloud, or PaddleOCR.
  */
 export class OCRProcessor {
   /**
@@ -24,7 +26,9 @@ export class OCRProcessor {
     const startTime = performance.now()
     let rawText = ''
     let confidence = 0
-    let ocrEngine = 'Tesseract.js'
+    let ocrEngine = 'PaddleOCR'
+    let parsedReading: string | undefined
+    let displayModel: string | undefined
 
     // 1. Perform canvas preprocessing (auto-crop, adaptive threshold, sharpening, size normalization)
     preprocessImage(srcCanvas, destCanvas, options)
@@ -40,23 +44,17 @@ export class OCRProcessor {
         rawText = nativeResult.text
         confidence = nativeResult.confidence
       } else {
-        // Web Platform: Try Google Cloud Vision API first, fallback to client-side Tesseract.js
-        try {
-          ocrEngine = 'Google Vision (Cloud)'
-          const cloudResult = await this.runCloudVisionOCR(destCanvas)
-          rawText = cloudResult.text
-          confidence = cloudResult.confidence
-        } catch (cloudErr) {
-          console.warn('Google Vision Cloud OCR unavailable, falling back to Tesseract.js:', cloudErr)
-          ocrEngine = 'Tesseract.js (Local Fallback)'
-          const tesseractResult = await this.runWebTesseract(destCanvas)
-          rawText = tesseractResult.text
-          confidence = tesseractResult.confidence
-        }
+        // Web Platform: Try PaddleOCR API service
+        const paddleResult = await this.runPaddleOCR(destCanvas)
+        rawText = paddleResult.text
+        confidence = paddleResult.confidence
+        ocrEngine = paddleResult.engine || 'PaddleOCR'
+        parsedReading = paddleResult.reading
+        displayModel = paddleResult.displayModel
       }
     } catch (err) {
-      console.error('All OCR engines failed:', err)
-      throw new Error('OCR recognition failure')
+      console.error('OCR engine failed:', err)
+      throw new Error('AI reading temporarily unavailable.')
     }
 
     const endTime = performance.now()
@@ -65,7 +63,9 @@ export class OCRProcessor {
       rawText,
       confidence,
       ocrEngine,
-      processingTimeMs: Math.round(endTime - startTime)
+      processingTimeMs: Math.round(endTime - startTime),
+      parsedReading,
+      displayModel
     }
   }
 
@@ -117,9 +117,9 @@ export class OCRProcessor {
   }
 
   /**
-   * Helper to execute Google Cloud Vision API OCR via Next.js Server Route on Web
+   * Helper to execute Python microservice PaddleOCR via Next.js Server Route on Web
    */
-  private static async runCloudVisionOCR(canvas: HTMLCanvasElement): Promise<{ text: string; confidence: number }> {
+  private static async runPaddleOCR(canvas: HTMLCanvasElement): Promise<{ text: string; confidence: number; engine: string; reading?: string; displayModel?: string }> {
     const dataUrl = canvas.toDataURL('image/png')
 
     const response = await fetch('/api/ocr', {
@@ -135,13 +135,13 @@ export class OCRProcessor {
       throw new Error(errData.error || `HTTP error ${response.status}`)
     }
 
-    const { text } = await response.json()
-    const detectedModel = this.detectModelHeuristically(text)
-    const confidence = this.estimateConfidence(text, detectedModel)
-
+    const ocrResult = await response.json()
     return {
-      text,
-      confidence
+      text: ocrResult.text || '',
+      confidence: ocrResult.confidence || 0,
+      engine: ocrResult.engine || 'PaddleOCR',
+      reading: ocrResult.reading,
+      displayModel: ocrResult.displayModel
     }
   }
 

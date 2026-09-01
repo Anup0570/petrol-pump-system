@@ -60,6 +60,7 @@ export function ReadingOCRModal({
 
   // Validation Warnings
   const [warnings, setWarnings] = useState<string[]>([])
+  const [hasError, setHasError] = useState<boolean>(false)
 
   // Interactive Cropping states
   const [crop, setCrop] = useState<{ x: number; y: number; w: number; h: number }>({ x: 10, y: 15, w: 80, h: 70 })
@@ -162,6 +163,7 @@ export function ReadingOCRModal({
       }
 
       try {
+        setHasError(false)
         // Preprocessor options: adaptiveThreshold (Bradley-Roth binarization)
         const options = {
           brightness: 0,
@@ -177,10 +179,10 @@ export function ReadingOCRModal({
         const ocrResult = await OCRProcessor.process(srcCanvas, destCanvas, options)
         
         // Detect Model
-        const model = DisplayDetector.detect(ocrResult.rawText)
+        const model = ocrResult.displayModel === 'MODEL_1' ? 'model1' : (ocrResult.displayModel === 'MODEL_2' ? 'model2' : DisplayDetector.detect(ocrResult.rawText))
         
         // Parse digits
-        const parsed = PumpDisplayParser.parse(ocrResult.rawText, model)
+        const parsed = ocrResult.parsedReading || PumpDisplayParser.parse(ocrResult.rawText, model)
 
         setRawText(ocrResult.rawText)
         setParsedReading(parsed)
@@ -192,10 +194,11 @@ export function ReadingOCRModal({
         // Validate closing reading against opening reading
         const validation = OCRValidation.validate(parsed, openingReading)
         setWarnings(validation.warnings)
-      } catch (err) {
+      } catch (err: any) {
         console.error('OCR pipeline error:', err)
         setParsedReading('')
-        setWarnings(['OCR Engine failure. Please type manual entry.'])
+        setHasError(true)
+        setWarnings(['AI reading temporarily unavailable.'])
       } finally {
         setLoading(false)
       }
@@ -475,6 +478,16 @@ export function ReadingOCRModal({
                     </div>
                   )}
                 </div>
+              ) : hasError ? (
+                <div className="bg-rose-50 border border-rose-100 rounded-2xl p-4 text-center text-rose-700 space-y-2">
+                  <AlertTriangle className="w-8 h-8 text-[#FF6600] mx-auto" />
+                  <div>
+                    <span className="text-sm font-bold block text-slate-800">AI reading temporarily unavailable.</span>
+                    <span className="text-[10px] text-rose-500 font-semibold block mt-1">
+                      The PaddleOCR service is offline or unreachable. Please retry, retake photo, adjust crop, or proceed with manual entry.
+                    </span>
+                  </div>
+                </div>
               ) : (
                 <div className="bg-rose-50 border border-rose-100 rounded-2xl p-4 text-center text-rose-700 space-y-2">
                   <AlertTriangle className="w-8 h-8 text-rose-600 mx-auto" />
@@ -570,6 +583,13 @@ export function ReadingOCRModal({
                   className="flex-1 h-10 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition-all"
                 >
                   Manual Entry
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTriggerOcrCounter(prev => prev + 1)}
+                  className="flex-1 h-10 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition-all"
+                >
+                  Retry
                 </button>
                 <button
                   type="button"
